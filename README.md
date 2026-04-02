@@ -1,6 +1,6 @@
 # Ethica
 
-[![Cloudflare Pages](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Pages-F38020?logo=cloudflare&logoColor=white)](https://ethica.pages.dev)
+[![Cloudflare Workers](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)](https://ethica.jason-266.workers.dev)
 
 **AI ethics compliance checking as a service and CLI**
 
@@ -37,7 +37,7 @@ curl -X POST http://localhost:8000/check \
 Once deployed, add a compliance badge to any project:
 
 ```markdown
-![Ethica](https://ethica.pages.dev/badge/owner/repo)
+![Ethica](https://ethica.jason-266.workers.dev/badge/owner/repo)
 ```
 
 Query params: `?level=basic|standard|verified` `?ref=branch` `?framework=unesco-2021`

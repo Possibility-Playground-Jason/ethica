@@ -93,14 +93,14 @@
   </table>
 
   <h3>Example</h3>
-  <pre><code>curl -X POST https://ethica.pages.dev/check \
+  <pre><code>curl -X POST https://ethica.jason-266.workers.dev/check \
   -H "Content-Type: application/json" \
   -d '{
     "repo_url": "https://github.com/owner/repo.git"
   }'</code></pre>
 
   <p>With optional parameters:</p>
-  <pre><code>curl -X POST https://ethica.pages.dev/check \
+  <pre><code>curl -X POST https://ethica.jason-266.workers.dev/check \
   -H "Content-Type: application/json" \
   -d '{
     "repo_url": "https://github.com/owner/repo.git",
@@ -161,7 +161,7 @@
   <h2>POST /check/report</h2>
   <p>Same request body as <code>/check</code>, but returns a rendered HTML report card instead of JSON. Useful for embedding in iframes or opening directly in a browser.</p>
 
-  <pre><code>curl -X POST https://ethica.pages.dev/check/report \
+  <pre><code>curl -X POST https://ethica.jason-266.workers.dev/check/report \
   -H "Content-Type: application/json" \
   -d '{"repo_url": "https://github.com/owner/repo.git"}' \
   -o report.html</code></pre>
@@ -170,7 +170,7 @@
   <h2>POST /check/badge</h2>
   <p>Same request body as <code>/check</code>, but returns an SVG badge image. Useful for generating a badge dynamically via a POST request.</p>
 
-  <pre><code>curl -X POST https://ethica.pages.dev/check/badge \
+  <pre><code>curl -X POST https://ethica.jason-266.workers.dev/check/badge \
   -H "Content-Type: application/json" \
   -d '{"repo_url": "https://github.com/owner/repo.git"}' \
   -o badge.svg</code></pre>
@@ -190,10 +190,10 @@
   <h3>Add a Badge to Your README</h3>
   <p>Paste this into your <code>README.md</code> (replace <code>owner/repo</code> with your GitHub repository):</p>
 
-  <pre><code>![Ethica](https://ethica.pages.dev/badge/owner/repo)</code></pre>
+  <pre><code>![Ethica](https://ethica.jason-266.workers.dev/badge/owner/repo)</code></pre>
 
   <p>With options:</p>
-  <pre><code>![Ethica](https://ethica.pages.dev/badge/owner/repo?level=verified&amp;ref=main)</code></pre>
+  <pre><code>![Ethica](https://ethica.jason-266.workers.dev/badge/owner/repo?level=verified&amp;ref=main)</code></pre>
 
   <!-- Compliance Levels --------------------------------------------------->
   <h2>Compliance Levels</h2>
