@@ -71,6 +71,16 @@ async function ghFetch(
   });
   if (!resp.ok) {
     const body = await resp.text();
+    if (resp.status === 403 && body.includes("rate limit")) {
+      throw new Error(
+        "GitHub API rate limit exceeded. This service is currently using unauthenticated requests (60/hr). Please try again later."
+      );
+    }
+    if (resp.status === 404) {
+      throw new Error(
+        `Repository not found: ${path.replace(/^\/repos\//, "").split("/git/")[0]}. Make sure the repository exists and is public.`
+      );
+    }
     throw new Error(
       `GitHub API ${resp.status}: ${path} — ${body.slice(0, 200)}`
     );
