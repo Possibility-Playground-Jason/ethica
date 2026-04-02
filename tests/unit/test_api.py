@@ -179,6 +179,31 @@ class TestCheckEndpoint:
         response = client.get("/badge/bad%20owner/repo")
         assert response.status_code == 400
 
+    def test_generate_endpoint(self, tmp_path):
+        """POST /generate returns a profile and markdown card."""
+        (tmp_path / "project").mkdir()
+        project = tmp_path / "project"
+        (project / "requirements.txt").write_text("torch>=2.0\nshap>=0.40\n")
+        (project / "README.md").write_text("# Test\n\nA test project.")
+
+        def fake_clone(repo_url, dest, ref=None):
+            import shutil
+            shutil.copytree(str(project), str(dest), dirs_exist_ok=True)
+
+        with patch("ethica.api.server._clone_repo", side_effect=fake_clone):
+            response = client.post(
+                "/generate",
+                json={"repo_url": "https://example.com/fake/repo.git"},
+            )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "profile" in data
+        assert "card_markdown" in data
+        assert "torch" in data["profile"]["ai_libraries"]
+        assert "# Model Card:" in data["card_markdown"]
+        assert "[TODO" in data["card_markdown"]
+
     def test_check_non_compliant_local_repo(self, tmp_path):
         """An empty project should fail most checks."""
         (tmp_path / "project").mkdir()

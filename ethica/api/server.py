@@ -28,6 +28,8 @@ from ethica.api.report import generate_report_html
 from ethica.core.checker import CheckEngine
 from ethica.core.registry import FrameworkRegistry
 from ethica.utils.detect import detect_project_types
+from ethica.utils.generate import generate_card
+from ethica.utils.introspect import introspect_project
 
 app = FastAPI(
     title="Ethica",
@@ -252,3 +254,47 @@ async def badge_get(
             "Cache-Control": "public, max-age=300, s-maxage=300",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Generate — pre-filled model/system card
+# ---------------------------------------------------------------------------
+
+class GenerateRequest(BaseModel):
+    """Request body for the /generate endpoint."""
+    repo_url: str = Field(
+        ...,
+        description="Git clone URL of the project",
+        examples=["https://github.com/user/my-ai-app.git"],
+    )
+    ref: Optional[str] = Field(None, description="Git ref to check out")
+
+
+@app.post("/generate")
+async def generate_card_endpoint(request: GenerateRequest) -> dict:
+    """
+    Clone a repo, introspect it, and return a pre-filled model/system card
+    along with the raw project profile.
+
+    The card is Markdown with [TODO] placeholders where human input is needed.
+    """
+    tmp_dir = tempfile.mkdtemp(prefix="ethica-")
+    project_path = Path(tmp_dir) / "project"
+
+    try:
+        try:
+            _clone_repo(request.repo_url, project_path, request.ref)
+        except subprocess.TimeoutExpired:
+            raise HTTPException(status_code=504, detail="Timed out cloning repository")
+        except RuntimeError as exc:
+            raise HTTPException(status_code=422, detail=f"Could not clone repository: {exc}")
+
+        profile = introspect_project(project_path)
+        card = generate_card(profile)
+
+        return {
+            "profile": profile,
+            "card_markdown": card,
+        }
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
