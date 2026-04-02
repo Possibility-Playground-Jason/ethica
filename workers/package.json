@@ -1,0 +1,21 @@
+{
+  "name": "ethica-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Ethica AI ethics compliance checking on Cloudflare Pages",
+  "scripts": {
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler pages deploy public",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "typescript": "^5.5.0",
+    "wrangler": "^4.0.0"
+  }
+}

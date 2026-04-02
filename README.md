@@ -97,7 +97,19 @@ exclude_checks: []
   # - "unesco-2021/transparency-002"  # optionally skip checks
 ```
 
-## Deploying to Google Cloud Run
+## Deploying
+
+### Cloudflare Pages (recommended)
+
+No Docker required. Connect your GitHub repo and it auto-deploys on every push to Cloudflare's edge (300+ locations, no cold starts).
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
+2. Select your repo, set root directory to `workers`, build command to `npm install`, output to `public`
+3. Deploy
+
+See [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md) for full instructions, GitHub token setup, and custom domains.
+
+### Google Cloud Run (Docker)
 
 See [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md) for full instructions. The short version:
 
