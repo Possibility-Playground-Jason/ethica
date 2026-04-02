@@ -1,9 +1,13 @@
-# ABOUTME: Cloudflare Pages configuration for ethica API
+# ABOUTME: Cloudflare Worker configuration for ethica API
 # ABOUTME: Deploys via GitHub integration — auto-deploys on push, no Docker needed
 
 name = "ethica"
+main = "src/index.ts"
 compatibility_date = "2025-04-01"
-pages_build_output_dir = "./public"
+
+# Serve static files from public/ alongside the Worker API
+[assets]
+directory = "./public"
 
 # Optional: GitHub token for higher API rate limits (5000/hr vs 60/hr)
 # Set via Cloudflare dashboard: Settings → Environment variables → GITHUB_TOKEN
