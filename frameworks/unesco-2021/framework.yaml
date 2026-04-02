@@ -78,10 +78,17 @@ checks:
     description: "Project should implement explainability methods"
     config:
       packages:
+        # Python
         - "shap"
         - "lime"
         - "eli5"
         - "interpret"
+        # JavaScript/TypeScript
+        - "tensorflowjs-vis"
+        - "@tensorflow/tfjs-vis"
+        - "ml-explain"
+        - "shap-js"
+        - "interpretml"
       require_any: true
 
   # Fairness checks
@@ -93,9 +100,14 @@ checks:
     description: "Project should use fairness evaluation tools"
     config:
       packages:
+        # Python
         - "fairlearn"
         - "aif360"
         - "themis-ml"
+        # JavaScript/TypeScript
+        - "@anthropic-ai/sdk"
+        - "ai-fairness"
+        - "ml-fairness"
       require_any: true
 
   # Privacy checks

@@ -202,3 +202,47 @@ dependencies = [
         result = check.run(tmp_path)
 
         assert result.status == CheckStatus.PASSED
+
+    def test_dependency_package_json(self, tmp_path):
+        """Test finding dependency in package.json (JavaScript/TypeScript)"""
+        package_json = tmp_path / "package.json"
+        package_json.write_text('{\n  "dependencies": {\n    "react": "^18.0.0",\n    "@tensorflow/tfjs": "^4.0.0"\n  },\n  "devDependencies": {\n    "@tensorflow/tfjs-vis": "^1.0.0"\n  }\n}')
+
+        check_spec = {
+            "id": "test-003",
+            "name": "Test JS Dependency Check",
+            "principle": "test",
+            "severity": "warning",
+            "description": "Test check",
+            "config": {
+                "packages": ["@tensorflow/tfjs-vis"],
+                "require_any": True
+            }
+        }
+
+        check = DependencyCheck(check_spec)
+        result = check.run(tmp_path)
+
+        assert result.status == CheckStatus.PASSED
+
+    def test_dependency_package_json_not_found(self, tmp_path):
+        """Test missing dependency in package.json"""
+        package_json = tmp_path / "package.json"
+        package_json.write_text('{\n  "dependencies": {\n    "react": "^18.0.0"\n  }\n}')
+
+        check_spec = {
+            "id": "test-004",
+            "name": "Test JS Dependency Check",
+            "principle": "test",
+            "severity": "warning",
+            "description": "Test check",
+            "config": {
+                "packages": ["shap", "lime"],
+                "require_any": True
+            }
+        }
+
+        check = DependencyCheck(check_spec)
+        result = check.run(tmp_path)
+
+        assert result.status == CheckStatus.FAILED

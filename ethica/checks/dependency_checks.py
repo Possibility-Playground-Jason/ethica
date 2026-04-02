@@ -1,10 +1,11 @@
-# ABOUTME: Dependency-based compliance checks for Python packages
-# ABOUTME: Checks requirements.txt, pyproject.toml, and setup.py for required libraries
+# ABOUTME: Dependency-based compliance checks for Python and JavaScript/TypeScript packages
+# ABOUTME: Checks requirements.txt, pyproject.toml, setup.py, and package.json for required libraries
 
 """
 Dependency-based compliance checks.
 """
 
+import json
 import re
 from pathlib import Path
 from typing import Set
@@ -100,6 +101,11 @@ class DependencyCheck(BaseCheck):
         if setup_path.exists():
             dependencies.update(self._parse_setup_py(setup_path))
 
+        # Check package.json (JavaScript/TypeScript)
+        package_json_path = project_path / "package.json"
+        if package_json_path.exists():
+            dependencies.update(self._parse_package_json(package_json_path))
+
         return dependencies
 
     def _parse_requirements_file(self, file_path: Path) -> Set[str]:
@@ -129,31 +135,38 @@ class DependencyCheck(BaseCheck):
         try:
             content = file_path.read_text()
 
-            # Simple pattern matching for dependencies
-            # This is a basic implementation; a full parser would be more robust
-            in_dependencies = False
+            in_section = False  # inside a [*.dependencies] section
+            in_array = False  # inside a dependencies = [...] array
+
             for line in content.splitlines():
-                line = line.strip()
+                stripped = line.strip()
 
-                # Detect dependency sections
-                if line.startswith("[") and "dependencies" in line.lower():
-                    in_dependencies = True
-                    continue
-                elif line.startswith("["):
-                    in_dependencies = False
+                # Detect section headers like [tool.poetry.dependencies]
+                if stripped.startswith("["):
+                    in_array = False
+                    if "dependencies" in stripped.lower():
+                        in_section = True
+                    else:
+                        in_section = False
                     continue
 
-                if in_dependencies and "=" in line:
-                    # Extract package name from entries like: 'package = ">=1.0"'
-                    match = re.match(r'"?([a-zA-Z0-9_-]+)"?\s*=', line)
+                # Detect inline/multiline array: dependencies = [...]
+                if re.match(r"(?:dev-)?dependencies\s*=\s*\[", stripped):
+                    in_array = True
+
+                # Extract packages from array items like "shap>=0.40.0"
+                if in_array:
+                    matches = re.findall(r'"([a-zA-Z0-9@/_-]+)[>=<\[]?', stripped)
+                    for m in matches:
+                        dependencies.add(m.lower())
+                    if "]" in stripped:
+                        in_array = False
+
+                # Extract packages from section key-value like: shap = ">=0.40"
+                if in_section and "=" in stripped:
+                    match = re.match(r'"?([a-zA-Z0-9_-]+)"?\s*=', stripped)
                     if match:
                         dependencies.add(match.group(1).lower())
-
-                # Also check for dependencies array format
-                if "dependencies = [" in line or in_dependencies:
-                    matches = re.findall(r'"([a-zA-Z0-9_-]+)[>=<]', line)
-                    for match in matches:
-                        dependencies.add(match.lower())
 
         except Exception:
             pass
@@ -178,6 +191,24 @@ class DependencyCheck(BaseCheck):
                 # Extract package names
                 packages = re.findall(r'"([a-zA-Z0-9_-]+)[>=<]?', match)
                 dependencies.update(pkg.lower() for pkg in packages)
+
+        except Exception:
+            pass
+
+        return dependencies
+
+    def _parse_package_json(self, file_path: Path) -> Set[str]:
+        """Parse package.json for dependencies (JavaScript/TypeScript projects)"""
+        dependencies = set()
+
+        try:
+            content = file_path.read_text()
+            data = json.loads(content)
+
+            for dep_key in ("dependencies", "devDependencies", "peerDependencies"):
+                deps = data.get(dep_key, {})
+                if isinstance(deps, dict):
+                    dependencies.update(name.lower() for name in deps.keys())
 
         except Exception:
             pass
