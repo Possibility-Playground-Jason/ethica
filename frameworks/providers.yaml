@@ -1,0 +1,122 @@
+# ABOUTME: Registry of AI model providers and their transparency status
+# ABOUTME: Used by provider-check to verify AI supply chain ethics compliance
+
+# This registry tracks whether AI model providers publish system cards,
+# safety evaluations, and transparency documentation for their models.
+#
+# Sources:
+# - Anthropic: https://www.anthropic.com/system-cards
+# - OpenAI: https://openai.com/index/gpt-4o-system-card/
+# - Google: https://ai.google.dev/responsible
+# - Meta: https://ai.meta.com/tools/system-cards/
+# - Stanford FMTI: https://crfm.stanford.edu/fmti/
+
+providers:
+  anthropic:
+    name: "Anthropic"
+    transparency_url: "https://www.anthropic.com/transparency"
+    system_cards_url: "https://www.anthropic.com/system-cards"
+    safety_framework: "Responsible Scaling Policy (RSP)"
+    publishes_system_cards: true
+    models:
+      - pattern: "claude-opus-4"
+        system_card_url: "https://www.anthropic.com/claude-4-system-card"
+        safety_level: "ASL-3"
+      - pattern: "claude-sonnet-4"
+        system_card_url: "https://www.anthropic.com/claude-4-system-card"
+        safety_level: "ASL-2"
+      - pattern: "claude-haiku-4"
+        system_card_url: "https://www.anthropic.com/claude-haiku-4-5-system-card"
+        safety_level: "ASL-2"
+      - pattern: "claude-3"
+        system_card_url: "https://www.anthropic.com/claude-3-7-sonnet-system-card"
+        safety_level: "ASL-2"
+    # Detection: imports from 'anthropic' package, or model IDs matching 'claude-*'
+    import_markers:
+      - "anthropic"
+    model_id_patterns:
+      - "claude-"
+
+  openai:
+    name: "OpenAI"
+    transparency_url: "https://openai.com/safety"
+    system_cards_url: "https://openai.com/index/gpt-4o-system-card/"
+    safety_framework: "Preparedness Framework"
+    publishes_system_cards: true
+    models:
+      - pattern: "gpt-4o"
+        system_card_url: "https://cdn.openai.com/gpt-4o-system-card.pdf"
+      - pattern: "gpt-4"
+        system_card_url: "https://cdn.openai.com/papers/gpt-4-system-card.pdf"
+      - pattern: "o1"
+        system_card_url: "https://openai.com/index/openai-o1-system-card/"
+      - pattern: "o3"
+        system_card_url: "https://openai.com/index/o3-system-card/"
+    import_markers:
+      - "openai"
+    model_id_patterns:
+      - "gpt-"
+      - "o1-"
+      - "o3-"
+
+  google:
+    name: "Google DeepMind"
+    transparency_url: "https://ai.google.dev/responsible"
+    safety_framework: "Frontier Safety Framework (FSF)"
+    publishes_system_cards: true
+    notes: "Has been criticized for delayed publication of model cards relative to model launches"
+    models:
+      - pattern: "gemini-2.5"
+        notes: "Initial release lacked model card; published weeks later"
+      - pattern: "gemini-3"
+        system_card_url: "https://storage.googleapis.com/deepmind-media/Model-Cards/Gemini-3-Pro-Model-Card.pdf"
+      - pattern: "gemini-1.5"
+        system_card_url: "https://storage.googleapis.com/deepmind-media/gemini/gemini_v1_5_report.pdf"
+    import_markers:
+      - "google.generativeai"
+      - "google-generativeai"
+      - "@google/generative-ai"
+    model_id_patterns:
+      - "gemini-"
+
+  meta:
+    name: "Meta"
+    transparency_url: "https://ai.meta.com/tools/system-cards/"
+    safety_framework: "Responsible Use Guide"
+    publishes_system_cards: true
+    notes: "Model cards for Llama 4 were criticized as insufficient by safety experts"
+    models:
+      - pattern: "llama-3"
+        system_card_url: "https://ai.meta.com/static-resource/llama-3-1-model-card/"
+      - pattern: "llama-4"
+        notes: "Model card criticized as insufficient"
+    import_markers:
+      - "llama"
+    model_id_patterns:
+      - "llama-"
+      - "meta-llama"
+
+  mistral:
+    name: "Mistral AI"
+    transparency_url: "https://mistral.ai"
+    publishes_system_cards: false
+    notes: "Limited transparency documentation compared to peers"
+    models:
+      - pattern: "mistral-"
+      - pattern: "mixtral-"
+    import_markers:
+      - "mistralai"
+    model_id_patterns:
+      - "mistral-"
+      - "mixtral-"
+
+  cohere:
+    name: "Cohere"
+    transparency_url: "https://cohere.com"
+    publishes_system_cards: false
+    models:
+      - pattern: "command-"
+    import_markers:
+      - "cohere"
+    model_id_patterns:
+      - "command-"

@@ -71,6 +71,8 @@ class FrameworkRegistry:
             Framework metadata or None if not found
         """
         for category, fw_list in self.registry.get("frameworks", {}).items():
+            if fw_list is None:
+                continue
             for fw in fw_list:
                 if fw["id"] == framework_id:
                     fw_copy = fw.copy()
