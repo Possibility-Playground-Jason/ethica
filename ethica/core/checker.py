@@ -11,6 +11,7 @@ from typing import Any
 from ethica.checks.base import CheckStatus
 from ethica.checks.file_checks import FileExistsCheck
 from ethica.checks.dependency_checks import DependencyCheck
+from ethica.checks.provider_checks import ProviderCheck
 
 
 class CheckEngine:
@@ -20,6 +21,7 @@ class CheckEngine:
     CHECK_TYPES = {
         "file-exists": FileExistsCheck,
         "dependency-check": DependencyCheck,
+        "provider-check": ProviderCheck,
     }
 
     def __init__(self, framework_spec: dict[str, Any]) -> None:

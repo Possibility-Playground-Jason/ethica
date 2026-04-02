@@ -195,6 +195,15 @@ checks:
         - "ml-explain"
       require_any: true
 
+  - id: "transparency-003"
+    name: "AI Provider Transparency"
+    principle: "transparency"
+    severity: "warning"
+    type: "provider-check"
+    description: "AI model providers used in the project should publish system cards and safety evaluations"
+    config: {}
+    help_url: "https://www.anthropic.com/system-cards"
+
   # --- Fairness (Principle 3) ---
   - id: "fairness-001"
     name: "Fairness Metrics Library"

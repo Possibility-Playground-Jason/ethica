@@ -28,7 +28,7 @@ def test_compliant_project():
     # Verify results structure
     assert results["framework_id"] == "unesco-2021"
     assert "principles" in results
-    assert results["total_checks"] == 9  # transparency(2) + fairness(1) + privacy(1) + accountability(2) + safety(2) + sustainability(1)
+    assert results["total_checks"] == 10  # transparency(3) + fairness(1) + privacy(1) + accountability(2) + safety(2) + sustainability(1)
 
     # Should have high pass rate for compliant project
     assert results["pass_rate"] >= 0.8
