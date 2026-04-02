@@ -4,8 +4,8 @@
   "private": true,
   "description": "Ethica AI ethics compliance checking on Cloudflare Pages",
   "scripts": {
-    "dev": "wrangler pages dev",
-    "deploy": "wrangler pages deploy public",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

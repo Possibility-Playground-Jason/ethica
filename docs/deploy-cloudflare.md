@@ -1,11 +1,11 @@
-# Deploying Ethica to Cloudflare Pages
+# Deploying Ethica to Cloudflare Workers
 
 Run the ethica API on Cloudflare's edge network — no Docker, no containers,
 no cold starts. Auto-deploys from GitHub on every push.
 
 ## How it works
 
-The Pages deployment replaces `git clone` with the **GitHub API**:
+The Workers deployment replaces `git clone` with the **GitHub API**:
 
 | Python (Cloud Run)               | Pages (Cloudflare)                       |
 | -------------------------------- | ---------------------------------------- |
@@ -32,10 +32,10 @@ npm run dev          # local dev server at http://localhost:8787
 
 ## Deploy from GitHub (recommended)
 
-Connect your repo to Cloudflare Pages for automatic deployments on every push:
+Connect your repo to Cloudflare Workers for automatic deployments on every push:
 
 1. Go to the [Cloudflare dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create**
-2. Select the **Pages** tab → **Connect to Git**
+2. Select **Create Worker** → **Connect to Git**
 3. Authorize Cloudflare and select your `ethica` repository
 4. Configure the build:
 
@@ -44,14 +44,13 @@ Connect your repo to Cloudflare Pages for automatic deployments on every push:
    | **Production branch** | `main`            |
    | **Root directory**    | `workers`         |
    | **Build command**     | `npm install`     |
-   | **Output directory**  | `public`          |
+   | **Deploy command**    | `npx wrangler deploy` |
 
 5. Click **Save and Deploy**
 
-Your API will be live at `https://ethica.pages.dev` (or your custom project name).
+Your API will be live at `https://ethica.<your-subdomain>.workers.dev`.
 
-Every push to `main` triggers a new deployment automatically. Pull request
-branches get preview URLs.
+Every push to `main` triggers a new deployment automatically.
 
 ## Deploy manually (CLI)
 
@@ -59,7 +58,7 @@ branches get preview URLs.
 cd workers
 npm install
 npx wrangler login              # first time only
-npx wrangler pages deploy public
+npx wrangler deploy
 ```
 
 ## GitHub token (recommended)
@@ -77,7 +76,7 @@ repo size.
 **Via the CLI:**
 
 ```bash
-npx wrangler pages secret put GITHUB_TOKEN --project-name ethica
+npx wrangler secret put GITHUB_TOKEN
 # Paste your token when prompted
 ```
 
