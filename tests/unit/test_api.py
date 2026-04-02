@@ -127,6 +127,31 @@ class TestCheckEndpoint:
         assert "Ethica Report Card" in response.text
         assert "unesco-2021" in response.text
 
+    def test_check_badge_returns_svg(self, tmp_path):
+        """Badge endpoint returns an SVG image."""
+        (tmp_path / "project").mkdir()
+        project = tmp_path / "project"
+        (project / ".git").mkdir()
+        (project / "README.md").write_text("# Test")
+
+        def fake_clone(repo_url, dest, ref=None):
+            import shutil
+            shutil.copytree(str(project), str(dest), dirs_exist_ok=True)
+
+        with patch("ethica.api.server._clone_repo", side_effect=fake_clone):
+            response = client.post(
+                "/check/badge",
+                json={
+                    "repo_url": "https://example.com/fake/repo.git",
+                    "framework": "unesco-2021",
+                },
+            )
+
+        assert response.status_code == 200
+        assert "image/svg+xml" in response.headers["content-type"]
+        assert "<svg" in response.text
+        assert "ethica" in response.text
+
     def test_check_non_compliant_local_repo(self, tmp_path):
         """An empty project should fail most checks."""
         (tmp_path / "project").mkdir()

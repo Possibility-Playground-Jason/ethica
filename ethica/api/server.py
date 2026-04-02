@@ -17,10 +17,11 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 
 from ethica import __version__
+from ethica.api.badge import badge_from_results
 from ethica.api.report import generate_report_html
 from ethica.core.checker import CheckEngine
 from ethica.core.registry import FrameworkRegistry
@@ -191,3 +192,20 @@ async def check_repo_report(request: CheckRequest) -> HTMLResponse:
     results = _run_check(request)
     html = generate_report_html(results)
     return HTMLResponse(content=html)
+
+
+@app.post("/check/badge")
+async def check_repo_badge(request: CheckRequest) -> Response:
+    """
+    Clone a repo, run ethics compliance checks, and return an SVG badge.
+
+    Embed in a README like:
+        ![Ethica](https://your-service.run.app/check/badge)
+    """
+    results = _run_check(request)
+    svg = badge_from_results(results)
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "no-cache, max-age=0"},
+    )
