@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ethica — AI Ethics Compliance Checking</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         background: #f8fafc; color: #1e293b; line-height: 1.6; }
+  .container { max-width: 640px; margin: 0 auto; padding: 4rem 1.5rem; }
+  h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 2rem; }
+  h2 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+  code { background: #e2e8f0; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
+  pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px;
+        overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.5rem 0; }
+  a { color: #2563eb; }
+  .endpoints { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+  .endpoints td, .endpoints th { text-align: left; padding: 0.4rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+  .endpoints th { font-weight: 600; color: #475569; }
+  .method { font-family: monospace; font-weight: 600; font-size: 0.8rem; }
+  .footer { margin-top: 3rem; color: #94a3b8; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Ethica</h1>
+  <p class="subtitle">AI ethics compliance checking as a service, powered by Cloudflare Pages.</p>
+
+  <h2>API Endpoints</h2>
+  <table class="endpoints">
+    <tr><th>Method</th><th>Path</th><th>Description</th></tr>
+    <tr><td class="method">GET</td><td><code><a href="/health">/health</a></code></td><td>Health check</td></tr>
+    <tr><td class="method">GET</td><td><code><a href="/frameworks">/frameworks</a></code></td><td>List frameworks</td></tr>
+    <tr><td class="method">POST</td><td><code>/check</code></td><td>JSON compliance results</td></tr>
+    <tr><td class="method">POST</td><td><code>/check/report</code></td><td>HTML report card</td></tr>
+    <tr><td class="method">POST</td><td><code>/check/badge</code></td><td>SVG compliance badge</td></tr>
+    <tr><td class="method">GET</td><td><code>/badge/:owner/:repo</code></td><td>README-embeddable badge</td></tr>
+  </table>
+
+  <h2>Quick Example</h2>
+  <pre>curl -X POST https://ethica.pages.dev/check \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/owner/repo.git"}'</pre>
+
+  <h2>Badge for Your README</h2>
+  <pre>![Ethica](https://ethica.pages.dev/badge/owner/repo)</pre>
+
+  <div class="footer">
+    <a href="https://github.com/shellen/ethica">GitHub</a> &middot;
+    UNESCO Recommendation on the Ethics of AI (2021)
+  </div>
+</div>
+</body>
+</html>
