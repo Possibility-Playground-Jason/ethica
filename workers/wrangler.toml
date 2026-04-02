@@ -8,5 +8,9 @@ compatibility_date = "2025-04-01"
 # Pages mode: serve static files from public/, API handled by the Worker
 pages_build_output_dir = "./public"
 
+[build]
+command = "npm install"
+cwd = "workers"
+
 # Optional: GitHub token for higher API rate limits (5000/hr vs 60/hr)
 # Set via: npx wrangler pages secret put GITHUB_TOKEN --project-name ethica
