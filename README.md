@@ -97,7 +97,21 @@ exclude_checks: []
   # - "unesco-2021/transparency-002"  # optionally skip checks
 ```
 
-## Deploying to Google Cloud Run
+## Deploying
+
+### Cloudflare Workers (recommended)
+
+No Docker required. Deploys to Cloudflare's edge network (300+ locations, no cold starts).
+
+```bash
+cd workers
+npm install
+npm run deploy       # live in seconds
+```
+
+See [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md) for full instructions, GitHub token setup, and custom domains.
+
+### Google Cloud Run (Docker)
 
 See [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md) for full instructions. The short version:
 

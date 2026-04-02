@@ -1,0 +1,14 @@
+# ABOUTME: Cloudflare Workers configuration for ethica API
+# ABOUTME: Deploys the ethics compliance checker as an edge serverless function
+
+name = "ethica"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+
+# Optional: set a custom route
+# routes = [{ pattern = "ethica.example.com/*", zone_name = "example.com" }]
+
+# Optional: GitHub token for higher API rate limits (5000/hr vs 60/hr)
+# Set via: wrangler secret put GITHUB_TOKEN
+# [vars]
+# PUBLIC_URL = "https://ethica.<your-subdomain>.workers.dev"
