@@ -99,15 +99,13 @@ exclude_checks: []
 
 ## Deploying
 
-### Cloudflare Workers (recommended)
+### Cloudflare Pages (recommended)
 
-No Docker required. Deploys to Cloudflare's edge network (300+ locations, no cold starts).
+No Docker required. Connect your GitHub repo and it auto-deploys on every push to Cloudflare's edge (300+ locations, no cold starts).
 
-```bash
-cd workers
-npm install
-npm run deploy       # live in seconds
-```
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**
+2. Select your repo, set root directory to `workers`, build command to `npm install`, output to `public`
+3. Deploy
 
 See [docs/deploy-cloudflare.md](docs/deploy-cloudflare.md) for full instructions, GitHub token setup, and custom domains.
 

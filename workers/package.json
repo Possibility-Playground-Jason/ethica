@@ -2,10 +2,10 @@
   "name": "ethica-worker",
   "version": "0.1.0",
   "private": true,
-  "description": "Ethica AI ethics compliance checking on Cloudflare Workers",
+  "description": "Ethica AI ethics compliance checking on Cloudflare Pages",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "dev": "wrangler pages dev",
+    "deploy": "wrangler pages deploy public",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
