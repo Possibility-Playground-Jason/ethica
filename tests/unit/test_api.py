@@ -152,6 +152,33 @@ class TestCheckEndpoint:
         assert "<svg" in response.text
         assert "ethica" in response.text
 
+    def test_badge_get_endpoint(self, tmp_path):
+        """GET /badge/:owner/:repo returns SVG and builds correct clone URL."""
+        (tmp_path / "project").mkdir()
+        project = tmp_path / "project"
+        (project / ".git").mkdir()
+        (project / "README.md").write_text("# Test")
+
+        captured_urls = []
+
+        def fake_clone(repo_url, dest, ref=None):
+            captured_urls.append(repo_url)
+            import shutil
+            shutil.copytree(str(project), str(dest), dirs_exist_ok=True)
+
+        with patch("ethica.api.server._clone_repo", side_effect=fake_clone):
+            response = client.get("/badge/octocat/Hello-World")
+
+        assert response.status_code == 200
+        assert "image/svg+xml" in response.headers["content-type"]
+        assert "<svg" in response.text
+        assert captured_urls[0] == "https://github.com/octocat/Hello-World.git"
+
+    def test_badge_get_invalid_owner(self):
+        """GET /badge with invalid characters returns 400."""
+        response = client.get("/badge/bad%20owner/repo")
+        assert response.status_code == 400
+
     def test_check_non_compliant_local_repo(self, tmp_path):
         """An empty project should fail most checks."""
         (tmp_path / "project").mkdir()

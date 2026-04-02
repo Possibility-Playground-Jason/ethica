@@ -10,13 +10,15 @@ Usage:
     uvicorn ethica.api.server:app --host 0.0.0.0 --port 8000
 """
 
+import re
 import shutil
 import subprocess
 import tempfile
 from pathlib import Path
 from typing import Optional
+from urllib.parse import unquote
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import HTMLResponse, Response
 from pydantic import BaseModel, Field
 
@@ -198,9 +200,6 @@ async def check_repo_report(request: CheckRequest) -> HTMLResponse:
 async def check_repo_badge(request: CheckRequest) -> Response:
     """
     Clone a repo, run ethics compliance checks, and return an SVG badge.
-
-    Embed in a README like:
-        ![Ethica](https://your-service.run.app/check/badge)
     """
     results = _run_check(request)
     svg = badge_from_results(results)
@@ -208,4 +207,48 @@ async def check_repo_badge(request: CheckRequest) -> Response:
         content=svg,
         media_type="image/svg+xml",
         headers={"Cache-Control": "no-cache, max-age=0"},
+    )
+
+
+# ---------------------------------------------------------------------------
+# GET badge shorthand — works as a plain image URL in READMEs
+# ---------------------------------------------------------------------------
+
+_GITHUB_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+
+
+@app.get("/badge/{owner}/{repo}")
+async def badge_get(
+    owner: str,
+    repo: str,
+    ref: Optional[str] = Query(None, description="Branch, tag, or commit"),
+    framework: str = Query("unesco-2021"),
+    level: str = Query("standard"),
+) -> Response:
+    """
+    GET endpoint for embedding badges in Markdown.
+
+    Usage in a README:
+
+        ![Ethica](https://your-ethica.run.app/badge/owner/repo)
+        ![Ethica](https://your-ethica.run.app/badge/owner/repo?ref=main&level=basic)
+    """
+    slug = f"{owner}/{repo}"
+    if not _GITHUB_RE.match(slug):
+        raise HTTPException(status_code=400, detail="Invalid owner/repo format")
+
+    request = CheckRequest(
+        repo_url=f"https://github.com/{slug}.git",
+        ref=ref,
+        framework=framework,
+        compliance_level=level,
+    )
+    results = _run_check(request)
+    svg = badge_from_results(results)
+    return Response(
+        content=svg,
+        media_type="image/svg+xml",
+        headers={
+            "Cache-Control": "public, max-age=300, s-maxage=300",
+        },
     )
