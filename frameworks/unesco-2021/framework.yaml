@@ -62,12 +62,15 @@ checks:
     principle: "transparency"
     severity: "error"
     type: "file-exists"
-    description: "Project must include model card documentation"
+    description: "Project must include model card or system documentation"
     config:
       paths:
         - "MODEL_CARD.md"
         - "docs/MODEL_CARD.md"
         - "docs/model_card.md"
+        - "model_card.md"
+        - "SYSTEM_CARD.md"
+        - "docs/SYSTEM_CARD.md"
     help_url: "https://modelcards.withgoogle.com/"
 
   - id: "transparency-002"
@@ -75,20 +78,19 @@ checks:
     principle: "transparency"
     severity: "warning"
     type: "dependency-check"
-    description: "Project should implement explainability methods"
+    description: "Project should implement explainability or interpretability methods"
     config:
       packages:
         # Python
         - "shap"
         - "lime"
-        - "eli5"
+        - "captum"
         - "interpret"
+        - "alibi"
+        - "dalex"
         # JavaScript/TypeScript
-        - "tensorflowjs-vis"
         - "@tensorflow/tfjs-vis"
         - "ml-explain"
-        - "shap-js"
-        - "interpretml"
       require_any: true
 
   # Fairness checks
@@ -103,11 +105,9 @@ checks:
         # Python
         - "fairlearn"
         - "aif360"
-        - "themis-ml"
+        - "responsibleai"
         # JavaScript/TypeScript
-        - "@anthropic-ai/sdk"
         - "ai-fairness"
-        - "ml-fairness"
       require_any: true
 
   # Privacy checks
@@ -122,6 +122,8 @@ checks:
         - "PRIVACY_IMPACT_ASSESSMENT.md"
         - "docs/PRIVACY_IMPACT_ASSESSMENT.md"
         - "docs/privacy_impact_assessment.md"
+        - "PRIVACY.md"
+        - "docs/PRIVACY.md"
 
   # Accountability checks
   - id: "accountability-001"
@@ -133,6 +135,52 @@ checks:
     config:
       paths:
         - ".git"
+
+  - id: "accountability-002"
+    name: "Project Documentation"
+    principle: "accountability"
+    severity: "error"
+    type: "file-exists"
+    description: "Project must have a README describing its purpose and usage"
+    config:
+      paths:
+        - "README.md"
+        - "README.rst"
+        - "README.txt"
+        - "README"
+
+  # Safety checks
+  - id: "safety-001"
+    name: "Dependency Manifest"
+    principle: "safety"
+    severity: "warning"
+    type: "file-exists"
+    description: "Project must declare its dependencies in a manifest file"
+    config:
+      paths:
+        - "package.json"
+        - "requirements.txt"
+        - "pyproject.toml"
+        - "setup.py"
+        - "go.mod"
+        - "Cargo.toml"
+        - "Gemfile"
+        - "pom.xml"
+        - "build.gradle"
+
+  - id: "safety-002"
+    name: "License Declaration"
+    principle: "safety"
+    severity: "warning"
+    type: "file-exists"
+    description: "Project should include a license file"
+    config:
+      paths:
+        - "LICENSE"
+        - "LICENSE.md"
+        - "LICENSE.txt"
+        - "LICENCE"
+        - "COPYING"
 
 compliance_levels:
   basic:
@@ -160,5 +208,4 @@ compliance_levels:
     description: "Full ethics compliance with verification"
     required_principles: "all"
     minimum_check_pass_rate: 0.95
-    requires_external_audit: true
     badge_color: "blue"

@@ -1,8 +1,8 @@
 # ABOUTME: FastAPI service endpoint for remote AI ethics compliance checking
-# ABOUTME: Accepts a git repo URL, clones it, runs checks, and returns JSON results
+# ABOUTME: Accepts a git repo URL, clones it, runs checks, and returns JSON or HTML results
 
 """
-Ethica API server — check any project by pointing at its git URL.
+Ethica API server -- check any project by pointing at its git URL.
 
 Usage:
     ethica serve
@@ -17,11 +17,14 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 from ethica import __version__
+from ethica.api.report import generate_report_html
 from ethica.core.checker import CheckEngine
 from ethica.core.registry import FrameworkRegistry
+from ethica.utils.detect import detect_project_types
 
 app = FastAPI(
     title="Ethica",
@@ -91,31 +94,8 @@ def _clone_repo(repo_url: str, dest: Path, ref: Optional[str] = None) -> None:
         raise RuntimeError(result.stderr.strip() or "git clone failed")
 
 
-# ---------------------------------------------------------------------------
-# Endpoints
-# ---------------------------------------------------------------------------
-
-@app.get("/health", response_model=HealthResponse)
-async def health() -> HealthResponse:
-    """Health / readiness probe."""
-    return HealthResponse(status="ok", version=__version__)
-
-
-@app.get("/frameworks")
-async def list_frameworks() -> list[dict]:
-    """List available compliance frameworks."""
-    return registry.list_frameworks()
-
-
-@app.post("/check")
-async def check_repo(request: CheckRequest) -> dict:
-    """
-    Clone a repo, run ethics compliance checks, and return the results.
-
-    The repo is cloned into a temporary directory that is cleaned up
-    automatically after the check completes.
-    """
-    # Validate framework exists
+def _run_check(request: CheckRequest) -> dict:
+    """Clone, detect project type, run checks, return results dict."""
     framework_spec = _load_framework(request.framework)
 
     tmp_dir = tempfile.mkdtemp(prefix="ethica-")
@@ -136,11 +116,15 @@ async def check_repo(request: CheckRequest) -> dict:
                 detail=f"Could not clone repository: {exc}",
             )
 
+        # Detect project type
+        project_types = sorted(detect_project_types(project_path))
+
         # Run checks
         engine = CheckEngine(framework_spec)
         results = engine.run_checks(project_path)
 
-        # Attach request metadata
+        # Attach metadata
+        results["project_types"] = project_types
         results["request"] = {
             "repo_url": request.repo_url,
             "ref": request.ref,
@@ -149,7 +133,9 @@ async def check_repo(request: CheckRequest) -> dict:
         }
 
         # Evaluate compliance level
-        level_spec = framework_spec.get("compliance_levels", {}).get(request.compliance_level)
+        level_spec = framework_spec.get("compliance_levels", {}).get(
+            request.compliance_level
+        )
         if level_spec:
             min_rate = level_spec.get("minimum_check_pass_rate", 0.0)
             results["compliance"] = {
@@ -171,3 +157,37 @@ def _load_framework(framework_id: str) -> dict:
         return registry.load_framework_spec(framework_id)
     except (ValueError, FileNotFoundError) as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+
+
+# ---------------------------------------------------------------------------
+# Endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/health", response_model=HealthResponse)
+async def health() -> HealthResponse:
+    """Health / readiness probe."""
+    return HealthResponse(status="ok", version=__version__)
+
+
+@app.get("/frameworks")
+async def list_frameworks() -> list[dict]:
+    """List available compliance frameworks."""
+    return registry.list_frameworks()
+
+
+@app.post("/check")
+async def check_repo(request: CheckRequest) -> dict:
+    """
+    Clone a repo, run ethics compliance checks, and return JSON results.
+    """
+    return _run_check(request)
+
+
+@app.post("/check/report", response_class=HTMLResponse)
+async def check_repo_report(request: CheckRequest) -> HTMLResponse:
+    """
+    Clone a repo, run ethics compliance checks, and return an HTML report card.
+    """
+    results = _run_check(request)
+    html = generate_report_html(results)
+    return HTMLResponse(content=html)

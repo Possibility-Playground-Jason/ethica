@@ -75,6 +75,8 @@ class TestCheckEndpoint:
         (project / "docs" / "MODEL_CARD.md").write_text("# Model Card")
         (project / "docs" / "PRIVACY_IMPACT_ASSESSMENT.md").write_text("# PIA")
         (project / "requirements.txt").write_text("shap>=0.40\nfairlearn>=0.8\n")
+        (project / "README.md").write_text("# Test Project")
+        (project / "LICENSE").write_text("MIT License")
 
         def fake_clone(repo_url, dest, ref=None):
             """Instead of cloning, copy our fixture into dest."""
@@ -99,6 +101,31 @@ class TestCheckEndpoint:
         assert data["request"]["repo_url"] == "https://example.com/fake/repo.git"
         assert "compliance" in data
         assert data["compliance"]["level"] == "standard"
+
+    def test_check_report_returns_html(self, tmp_path):
+        """HTML report card endpoint returns valid HTML."""
+        (tmp_path / "project").mkdir()
+        project = tmp_path / "project"
+        (project / ".git").mkdir()
+        (project / "README.md").write_text("# Test")
+
+        def fake_clone(repo_url, dest, ref=None):
+            import shutil
+            shutil.copytree(str(project), str(dest), dirs_exist_ok=True)
+
+        with patch("ethica.api.server._clone_repo", side_effect=fake_clone):
+            response = client.post(
+                "/check/report",
+                json={
+                    "repo_url": "https://example.com/fake/repo.git",
+                    "framework": "unesco-2021",
+                },
+            )
+
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
+        assert "Ethica Report Card" in response.text
+        assert "unesco-2021" in response.text
 
     def test_check_non_compliant_local_repo(self, tmp_path):
         """An empty project should fail most checks."""

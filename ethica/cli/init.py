@@ -6,12 +6,14 @@ Initialize ethics compliance configuration in a project.
 """
 
 from pathlib import Path
-from typing import Optional
 
 import typer
 import yaml
 from rich.console import Console
 from rich.panel import Panel
+
+from ethica import __version__
+from ethica.utils.detect import detect_project_types
 
 console = Console()
 
@@ -47,6 +49,13 @@ def init_command(
         console.print("Use --force to overwrite.")
         raise typer.Exit(1)
 
+    # Detect project type
+    project_types = detect_project_types(Path.cwd())
+    if project_types:
+        console.print(
+            f"[dim]Detected project type(s): {', '.join(sorted(project_types))}[/dim]"
+        )
+
     # Create configuration
     config = {
         "version": "1.0",
@@ -61,8 +70,9 @@ def init_command(
         "custom_checks": [],
         "metadata": {
             "project_name": Path.cwd().name,
+            "project_types": sorted(project_types) if project_types else [],
             "last_assessed": None,
-            "assessment_tool_version": "0.1.0",
+            "assessment_tool_version": __version__,
         },
         "reporting": {
             "formats": ["text"],
@@ -74,7 +84,7 @@ def init_command(
     with open(config_path, "w") as f:
         yaml.dump(config, f, default_flow_style=False, sort_keys=False)
 
-    console.print(f"[green]✓[/green] Created .ai-ethics.yaml with {framework} framework")
+    console.print(f"[green]\u2713[/green] Created .ai-ethics.yaml with {framework} framework")
 
     # Create docs directory if it doesn't exist
     docs_dir = Path("docs")
@@ -93,48 +103,49 @@ def init_command(
 def _create_unesco_templates(docs_dir: Path) -> None:
     """Create UNESCO framework template files"""
 
-    # Model card template
+    # Model / system card template
     model_card_path = docs_dir / "MODEL_CARD.md"
     if not model_card_path.exists():
-        model_card_content = """# Model Card
+        model_card_content = """# Model / System Card
 
-## Model Details
+## Overview
 
-- **Model Name**: [Your Model Name]
+- **System Name**: [Your System Name]
 - **Version**: [Version Number]
 - **Date**: [Date]
-- **Model Type**: [e.g., Neural Network, Random Forest, etc.]
-- **Training Data**: [Description of training data]
+- **Type**: [e.g., ML model, AI-powered API, recommendation system, LLM application]
 
 ## Intended Use
 
 - **Primary Use Cases**: [Describe intended applications]
 - **Out-of-Scope Uses**: [Describe inappropriate uses]
+- **Target Users**: [Who will interact with this system]
 
-## Metrics
+## Architecture
 
-- **Model Performance**: [Key performance metrics]
-- **Decision Thresholds**: [If applicable]
+- **System Components**: [Key technical components]
+- **AI/ML Models Used**: [If applicable -- model type, provider, version]
+- **Data Sources**: [What data does the system use]
 
-## Training Data
+## Performance and Limitations
 
-- **Datasets Used**: [List datasets]
-- **Preprocessing**: [Data preprocessing steps]
-- **Data Splits**: [Train/validation/test split information]
+- **Key Metrics**: [Accuracy, latency, throughput, etc.]
+- **Known Limitations**: [Where the system may fail or underperform]
+- **Edge Cases**: [Scenarios that may produce unexpected results]
 
 ## Ethical Considerations
 
-- **Sensitive Data**: [Any sensitive or personal data used]
+- **Potential Harms**: [Who could be harmed and how]
 - **Bias Considerations**: [Known or potential biases]
-- **Limitations**: [Known limitations]
+- **Mitigation Steps**: [What has been done to reduce risks]
 
-## Recommendations
+## Monitoring
 
-- **Best Practices**: [Recommendations for responsible use]
-- **Monitoring**: [Suggested monitoring approaches]
+- **How is performance tracked?**: [Logging, dashboards, alerts]
+- **Feedback mechanisms**: [How users can report issues]
 """
         model_card_path.write_text(model_card_content)
-        console.print(f"[green]✓[/green] Created template: {model_card_path}")
+        console.print(f"[green]\u2713[/green] Created template: {model_card_path}")
 
     # Privacy impact assessment template
     privacy_path = docs_dir / "PRIVACY_IMPACT_ASSESSMENT.md"
@@ -144,32 +155,32 @@ def _create_unesco_templates(docs_dir: Path) -> None:
 ## Data Collection
 
 - **What data is collected?**: [Description]
-- **How is data collected?**: [Methods]
+- **How is data collected?**: [User input, APIs, tracking, etc.]
 - **Purpose of collection**: [Justification]
 
 ## Data Usage
 
-- **How is data used?**: [Description]
-- **Who has access?**: [Access controls]
+- **How is data used?**: [Training, inference, analytics, personalization]
+- **Who has access?**: [Teams, third-party services]
 - **Retention period**: [How long data is kept]
 
 ## Data Protection
 
-- **Security measures**: [Technical and organizational measures]
-- **Encryption**: [Encryption at rest and in transit]
-- **Access controls**: [Who can access what]
+- **Security measures**: [Encryption, access controls, network isolation]
+- **Where is data stored?**: [Cloud provider, region, on-premise]
+- **Third-party processors**: [Any external services that handle data]
 
 ## User Rights
 
 - **Right to access**: [How users can access their data]
 - **Right to deletion**: [How users can request deletion]
-- **Right to rectification**: [How users can correct data]
+- **Right to opt out**: [How users can opt out of AI processing]
 
 ## Compliance
 
-- **Regulations**: [GDPR, CCPA, etc.]
+- **Applicable regulations**: [GDPR, CCPA, HIPAA, SOC2, etc.]
 - **Data Protection Officer**: [Contact information]
 - **Last Review**: [Date]
 """
         privacy_path.write_text(privacy_content)
-        console.print(f"[green]✓[/green] Created template: {privacy_path}")
+        console.print(f"[green]\u2713[/green] Created template: {privacy_path}")
