@@ -72,9 +72,19 @@ async function ghFetch(
   if (!resp.ok) {
     const body = await resp.text();
     if (resp.status === 403 && body.includes("rate limit")) {
-      throw new Error(
-        "GitHub API rate limit exceeded. This service is currently using unauthenticated requests (60/hr). Please try again later."
-      );
+      const remaining = resp.headers.get("x-ratelimit-remaining") || "0";
+      const resetEpoch = resp.headers.get("x-ratelimit-reset");
+      const resetIn = resetEpoch ? Math.max(0, Math.ceil((parseInt(resetEpoch, 10) * 1000 - Date.now()) / 60000)) : null;
+      const resetMsg = resetIn !== null ? ` Resets in ~${resetIn} minute${resetIn === 1 ? "" : "s"}.` : "";
+      if (token) {
+        throw new Error(
+          `GitHub API rate limit exceeded (authenticated, 5,000/hr).${resetMsg}`
+        );
+      } else {
+        throw new Error(
+          `GitHub API rate limit exceeded. Unauthenticated requests are limited to 60/hr and share an IP with other services.${resetMsg} The service operator can add a GITHUB_TOKEN to increase this to 5,000/hr.`
+        );
+      }
     }
     if (resp.status === 404) {
       throw new Error(

@@ -357,7 +357,8 @@ async function runCheck() {
       var errMsg = data.detail || data.error || 'Request failed';
       var hint = '';
       if (errMsg.indexOf('rate limit') !== -1) {
-        hint = '<br><br><strong>Tip:</strong> You can also use the CLI locally (<code>pip install -e "."</code> then <code>ethica check</code>) which has no rate limit.';
+        hint = '<br><br><strong>Why?</strong> Without a GitHub token, all Cloudflare Workers on this IP share a 60 request/hr limit with GitHub. Even 1\u20132 requests can fail if others have used up the quota.'
+          + '<br><strong>Tip:</strong> You can use the CLI locally (<code>pip install -e "."</code> then <code>ethica check</code>) which uses your own GitHub rate limit.';
       } else if (errMsg.indexOf('not found') !== -1 || resp.status === 404) {
         hint = '<br><br><strong>Tip:</strong> Make sure the repository URL is correct and the repo is public.';
       }
