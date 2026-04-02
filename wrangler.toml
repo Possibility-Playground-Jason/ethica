@@ -1,0 +1,4 @@
+# ABOUTME: Cloudflare Pages configuration for ethica
+# ABOUTME: Tells wrangler the project name and where to find static assets for Pages deploy
+name = "ethica"
+pages_build_output_dir = "public"
