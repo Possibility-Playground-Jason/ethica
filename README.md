@@ -1,219 +1,137 @@
 # Ethica
 
-**Framework-agnostic platform for AI ethics compliance checking**
+**AI ethics compliance checking as a service and CLI**
 
-Think "ESLint for AI Ethics" - pluggable frameworks, automated checks, CI/CD integration, and actionable guidance.
+Automated compliance checking against the [UNESCO Recommendation on the Ethics of AI](https://www.unesco.org/en/artificial-intelligence/recommendation-ethics) -- the first global standard on AI ethics, adopted unanimously by 193 Member States in November 2021.
 
-## Why Use This?
-
-Building ethical AI shouldn't require a PhD in ethics or months of manual audits. Ethica:
-
-- **Automates compliance checking** against global standards like UNESCO's AI Ethics Recommendation
-- **Catches issues early** in development, not after deployment
-- **Provides clear guidance** on what's missing and how to fix it
-- **Integrates into your workflow** via CLI, CI/CD, and git hooks
-- **Works with any framework** - use existing standards or define your own
+Works with Python, JavaScript/TypeScript, Go, Rust, Java, and any project with a git repo.
 
 ## Quick Start
 
+### As a CLI
+
 ```bash
-# Install (when published)
-pip install ethica
+pip install -e "."
 
-# Or install from source
-git clone https://github.com/shellen/ethica
-cd ethica
-pip install -e .
-
-# Initialize in your AI project
-cd your-ai-project
-ethica init
-
-✓ Created .ai-ethics.yaml with unesco-2021 framework
-✓ Created template files in docs/
-  - MODEL_CARD.md
-  - PRIVACY_IMPACT_ASSESSMENT.md
-
-# Check compliance
-ethica check
-
-Checking against unesco-2021 (standard level)...
-
-Transparency and Explainability ✗
-  ✓ Model Card Documentation: Found MODEL_CARD.md
-  ✗ Explainability Implementation: No explainability library found
-    → Install one of: shap, lime, interpret
-
-Fairness and Non-discrimination ✗
-  ✗ Fairness Metrics Library: No fairness evaluation tools found
-    → Install one of: fairlearn, aif360, themis-ml
-
-Privacy and Data Protection ✓
-  ✓ Privacy Impact Assessment: Found PRIVACY_IMPACT_ASSESSMENT.md
-
-Accountability ✓
-  ✓ Version Control: Found .git/
-
-Summary:
-Overall Status: passed with warnings
-Pass Rate: 60.0%
-Checks Passed: 3/5
-
-# List available frameworks
-ethica frameworks list
-
-Available Ethics Frameworks
-┌──────────────┬─────────────────────────────────────────┬─────────┬──────────┐
-│ ID           │ Name                                    │ Version │ Category │
-├──────────────┼─────────────────────────────────────────┼─────────┼──────────┤
-│ unesco-2021  │ UNESCO AI Ethics Recommendation 2021    │ 1.0.0   │ intl.    │
-└──────────────┴─────────────────────────────────────────┴─────────┴──────────┘
+cd your-project
+ethica init       # creates .ai-ethics.yaml + doc templates
+ethica check      # run compliance checks
 ```
 
-## Features
+### As a Service
 
-- 🌍 **Global Standards**: Built-in support for UNESCO AI Ethics Recommendation 2021
-- 🔌 **Framework Agnostic**: Use existing frameworks or create your own
-- ⚡ **Fast**: Runs in seconds on typical projects
-- 🤖 **CI/CD Ready**: GitHub Actions and pre-commit hooks included
-- 📊 **Clear Reporting**: Actionable feedback on ethics compliance
+```bash
+pip install -e ".[server]"
+ethica serve      # starts API on port 8000
+
+# Check any public repo
+curl -X POST http://localhost:8000/check \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/user/repo.git"}'
+```
+
+### Badge for Your README
+
+Once deployed, add a compliance badge to any project:
+
+```markdown
+![Ethica](https://your-ethica-service.run.app/badge/owner/repo)
+```
+
+Query params: `?level=basic|standard|verified` `?ref=branch` `?framework=unesco-2021`
 
 ## What It Checks
 
-### Transparency & Explainability
-- Model card documentation
-- Explainability implementation
-- Decision logging
+Ethica implements 9 automated checks across 6 of the [10 UNESCO principles](https://unesdoc.unesco.org/ark:/48223/pf0000380455). The remaining 4 principles (Proportionality, Human Oversight, Awareness, Governance) require organizational processes -- see UNESCO's [RAM](https://www.unesco.org/ethics-ai/en/ram) and [EIA](https://www.unesco.org/ethics-ai/en/eia) tools for those.
 
-### Fairness & Non-discrimination
-- Bias testing frameworks
-- Fairness metrics
+| Principle | Check | What it looks for | Severity |
+|-----------|-------|-------------------|----------|
+| **Transparency** | Model / System Card | `MODEL_CARD.md`, `SYSTEM_CARD.md` in root or `docs/` | required |
+| **Transparency** | Explainability | `shap`, `captum`, `lime`, `alibi`, `@tensorflow/tfjs-vis`, etc. in deps | recommended |
+| **Fairness** | Fairness Metrics | `fairlearn`, `aif360`, `responsibleai`, etc. in deps | recommended |
+| **Privacy** | Privacy Assessment | `PRIVACY_IMPACT_ASSESSMENT.md` or `PRIVACY.md` | required |
+| **Accountability** | Version Control | `.git/` directory | required |
+| **Accountability** | README | `README.md` (or `.rst`, `.txt`) | required |
+| **Safety** | Dependency Manifest | `package.json`, `requirements.txt`, `pyproject.toml`, `go.mod`, `Cargo.toml`, etc. | recommended |
+| **Safety** | License | `LICENSE`, `COPYING`, etc. | recommended |
+| **Sustainability** | Ethical Impact Doc | `ETHICS.md` or `ETHICAL_IMPACT_ASSESSMENT.md` ([aligned with UNESCO EIA](https://www.unesco.org/ethics-ai/en/eia)) | recommended |
 
-### Privacy & Data Protection
-- Privacy impact assessments
-- PII detection
+Dependency checks read `requirements.txt`, `pyproject.toml`, `setup.py`, and `package.json`.
 
-### Accountability
-- Version control
-- Audit logging
+## API Endpoints
 
-### Safety & Security
-- Security testing frameworks
-- Error handling
+| Method | Path | Returns |
+|--------|------|---------|
+| `GET` | `/health` | Readiness probe |
+| `GET` | `/frameworks` | Available frameworks |
+| `POST` | `/check` | JSON compliance results |
+| `POST` | `/check/report` | HTML report card |
+| `POST` | `/check/badge` | SVG badge |
+| `GET` | `/badge/{owner}/{repo}` | SVG badge (for README embedding) |
+| `GET` | `/docs` | Interactive API docs (Swagger) |
 
-## Usage Examples
+## Compliance Levels
 
-### Basic Usage
-
-```bash
-# Initialize with default settings (UNESCO framework, standard level)
-ethica init
-
-# Check compliance
-ethica check
-
-# Check with verbose output (shows all checks, including passing ones)
-ethica check --verbose
-
-# Output results as JSON
-ethica check --output json > ethics-report.json
-```
-
-### Using Different Compliance Levels
-
-The UNESCO framework supports three compliance levels:
-
-- **basic**: Minimum requirements (50% pass rate, core principles only)
-- **standard**: Comprehensive coverage (70% pass rate, most principles) - *default*
-- **verified**: Full compliance (95% pass rate, all principles)
+| Level | Pass Rate | Scope |
+|-------|-----------|-------|
+| **basic** | 50% | Transparency + Accountability only |
+| **standard** | 70% | + Fairness, Privacy, Safety (default) |
+| **verified** | 95% | All principles |
 
 ```bash
-# Initialize with basic level
-ethica init --level basic
-
-# Override level when checking
+ethica check --level basic
 ethica check --level verified
 ```
 
-### Framework Information
+## Configuration
 
-```bash
-# List all available frameworks
-ethica frameworks list
-
-# Get detailed info about a framework
-ethica frameworks info unesco-2021
-```
-
-### Configuration File
-
-The `.ai-ethics.yaml` file controls your project's ethics compliance:
+`ethica init` creates `.ai-ethics.yaml`:
 
 ```yaml
 version: "1.0"
-
 frameworks:
   - id: "unesco-2021"
     enabled: true
     compliance_level: "standard"
-
-exclude_checks:
-  # Optionally exclude specific checks
-  - "unesco-2021/transparency-002"
-
-metadata:
-  project_name: "My AI Project"
-  team: "AI Ethics Team"
+exclude_checks: []
+  # - "unesco-2021/transparency-002"  # optionally skip checks
 ```
+
+## Deploying to Google Cloud Run
+
+See [docs/deploy-cloud-run.md](docs/deploy-cloud-run.md) for full instructions. The short version:
+
+```bash
+IMAGE=us-central1-docker.pkg.dev/$PROJECT_ID/ethica/ethica-api
+gcloud builds submit --tag $IMAGE .
+gcloud run deploy ethica-api --image $IMAGE --region us-central1 \
+  --allow-unauthenticated --port 8080 --min-instances 0
+```
+
+Scales to zero when idle. ~$0-5/mo at low traffic.
 
 ## Development
 
 ```bash
-# Clone repository
 git clone https://github.com/shellen/ethica
 cd ethica
-
-# Setup development environment
-python -m venv venv
-source venv/bin/activate
-pip install -e ".[dev]"
-
-# Run tests
+pip install -e ".[dev,server]"
 pytest
-
-# Format code
-black ethica/
-ruff check ethica/
 ```
 
-## Roadmap
+## UNESCO Source Material
 
-**Current (v0.1 - Minimal Viable Product)**
-- ✅ UNESCO 2021 framework with 5 core checks
-- ✅ CLI tool (init, check, frameworks commands)
-- ✅ File-exists and dependency-check types
-- ✅ Terminal output with clear guidance
+This project implements automated checks inspired by the UNESCO Recommendation on the Ethics of Artificial Intelligence. Key references:
 
-**Planned (v0.2)**
-- GitHub Action for CI/CD integration
-- Pre-commit hooks
-- Additional check types (code-pattern, custom-script)
-- More UNESCO checks (10+ total)
+- [Full text of the Recommendation](https://unesdoc.unesco.org/ark:/48223/pf0000380455) (adopted 23 Nov 2021)
+- [UNESCO Ethics of AI overview](https://www.unesco.org/en/artificial-intelligence/recommendation-ethics)
+- [Readiness Assessment Methodology (RAM)](https://www.unesco.org/ethics-ai/en/ram) -- country-level diagnostic deployed in 60+ countries
+- [Ethical Impact Assessment (EIA)](https://www.unesco.org/ethics-ai/en/eia) -- system-level impact assessment tool (published 2023)
+- [Global AI Ethics and Governance Observatory](https://www.unesco.org/ethics-ai/en) -- launched 2024
+- [Key facts summary](https://unesdoc.unesco.org/ark:/48223/pf0000385082)
 
-**Future (v1.0+)**
-- Additional frameworks (IEEE, EU AI Act, NIST)
-- Badge generation
-- HTML report generation
-- MCP server for real-time guidance
+Ethica automates project-level checks. It does not replace the RAM (national governance) or EIA (system impact) processes. This project is not officially endorsed by or affiliated with UNESCO.
 
 ## License
 
-Apache 2.0 - See [LICENSE](LICENSE) for details.
-
-## Attribution
-
-This tool implements the UNESCO AI Ethics Recommendation (2021) but is not officially endorsed by UNESCO.
-
-## Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Apache 2.0 -- See [LICENSE](LICENSE) for details.

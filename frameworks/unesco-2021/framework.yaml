@@ -1,14 +1,34 @@
-# ABOUTME: UNESCO AI Ethics Recommendation 2021 framework specification
-# ABOUTME: Defines principles, checks, and compliance levels
+# ABOUTME: UNESCO Recommendation on the Ethics of AI (2021) framework specification
+# ABOUTME: Covers all 10 principles from the Recommendation, with automated checks where feasible
+
+# Reference: UNESCO Recommendation on the Ethics of Artificial Intelligence
+# Full text: https://unesdoc.unesco.org/ark:/48223/pf0000380455
+# Overview: https://www.unesco.org/en/artificial-intelligence/recommendation-ethics
+#
+# Adopted unanimously by 193 Member States on 23 November 2021, this is the
+# first global normative instrument on AI ethics. It defines 4 core values,
+# 10 principles, and 11 policy action areas.
+#
+# UNESCO has since developed two implementation tools:
+# - Readiness Assessment Methodology (RAM): https://www.unesco.org/ethics-ai/en/ram
+# - Ethical Impact Assessment (EIA): https://www.unesco.org/ethics-ai/en/eia
+#
+# Ethica automates a subset of project-level checks inspired by these principles.
+# It does not replace the RAM (country-level) or EIA (system-level) processes.
 
 metadata:
   id: "unesco-2021"
-  name: "UNESCO AI Ethics Recommendation 2021"
-  version: "1.0.0"
+  name: "UNESCO Recommendation on the Ethics of AI"
+  version: "1.1.0"
   description: |
-    First global standard on AI ethics adopted by 193 member states.
-    Provides a comprehensive framework for ethical AI development and deployment.
+    First global normative instrument on AI ethics, adopted unanimously by
+    193 UNESCO Member States on 23 November 2021. Defines 4 core values,
+    10 principles, and 11 policy action areas for ethical AI development.
   source_url: "https://www.unesco.org/en/artificial-intelligence/recommendation-ethics"
+  full_text_url: "https://unesdoc.unesco.org/ark:/48223/pf0000380455"
+  ram_url: "https://www.unesco.org/ethics-ai/en/ram"
+  eia_url: "https://www.unesco.org/ethics-ai/en/eia"
+  observatory_url: "https://www.unesco.org/ethics-ai/en"
   license: "CC-BY-SA-4.0"
   maintainer: "shellen"
   tags:
@@ -16,53 +36,135 @@ metadata:
     - government
     - comprehensive
 
-principles:
-  - id: "transparency"
-    name: "Transparency and Explainability"
-    description: |
-      AI systems must be understandable to stakeholders. The level of
-      transparency should be appropriate to the context and impact of the system.
-    weight: "critical"
-    related_principles:
-      - accountability
+# ---------------------------------------------------------------------------
+# All 10 principles from the UNESCO Recommendation (Section III, paras 25-45)
+# ---------------------------------------------------------------------------
 
+principles:
+  # Principle 1
+  - id: "proportionality"
+    name: "Proportionality and Do No Harm"
+    description: |
+      The scale of AI deployment should be proportionate to the objective, and
+      AI systems should not be used beyond their intended purpose. No AI
+      technology should be used that harms individuals or communities.
+    weight: "critical"
+    unesco_paragraph: 25
+
+  # Principle 2
+  - id: "safety"
+    name: "Safety and Security"
+    description: |
+      Unwanted harms and vulnerabilities must be avoided throughout the AI
+      lifecycle. AI systems must be safe, secure, and robust.
+    weight: "high"
+    unesco_paragraph: 27
+
+  # Principle 3
   - id: "fairness"
     name: "Fairness and Non-discrimination"
     description: |
-      AI systems should not create or reinforce unfair bias and discrimination.
+      AI actors should promote social justice, fairness, and non-discrimination
+      while taking an inclusive approach to ensure AI's benefits are accessible
+      to all.
     weight: "critical"
     related_principles:
       - transparency
       - accountability
+    unesco_paragraph: 29
 
+  # Principle 4
+  - id: "sustainability"
+    name: "Sustainability"
+    description: |
+      AI technologies should be assessed against their impacts on sustainability,
+      including the UN Sustainable Development Goals, and on the environment
+      and ecosystems.
+    weight: "high"
+    unesco_paragraph: 31
+
+  # Principle 5
   - id: "privacy"
     name: "Right to Privacy and Data Protection"
     description: |
       Privacy must be protected and promoted throughout the AI lifecycle.
+      Adequate data governance mechanisms must be established.
     weight: "critical"
+    unesco_paragraph: 33
 
+  # Principle 6
+  - id: "human-oversight"
+    name: "Human Oversight and Determination"
+    description: |
+      Member States should ensure that AI systems do not displace ultimate
+      human responsibility and accountability. Human oversight mechanisms
+      must be appropriate to the context.
+    weight: "critical"
+    unesco_paragraph: 35
+
+  # Principle 7
+  - id: "transparency"
+    name: "Transparency and Explainability"
+    description: |
+      The ethical deployment of AI systems depends on their transparency and
+      explainability. People should be made aware when a decision is informed
+      or made by AI. The level of transparency should be appropriate to the
+      context and impact.
+    weight: "critical"
+    related_principles:
+      - accountability
+    unesco_paragraph: 37
+
+  # Principle 8
   - id: "accountability"
     name: "Responsibility and Accountability"
     description: |
-      Clear accountability mechanisms must exist for AI systems.
+      AI actors should be held accountable for the proper functioning of AI
+      systems and for respecting the principles of this Recommendation.
+      Auditability and traceability mechanisms should be in place.
     weight: "critical"
     related_principles:
       - transparency
+    unesco_paragraph: 39
 
-  - id: "safety"
-    name: "Safety and Security"
+  # Principle 9
+  - id: "awareness"
+    name: "Awareness and Literacy"
     description: |
-      AI systems must be safe and secure throughout their lifecycle.
-    weight: "high"
+      Public understanding and awareness of AI technologies and their
+      implications should be promoted through open and accessible education,
+      civic engagement, and digital skills training.
+    weight: "medium"
+    unesco_paragraph: 41
+
+  # Principle 10
+  - id: "governance"
+    name: "Multi-stakeholder and Adaptive Governance"
+    description: |
+      Participation of diverse stakeholders throughout the AI lifecycle is
+      necessary for inclusive governance. Legal frameworks should be adapted
+      to account for AI-specific challenges.
+    weight: "medium"
+    unesco_paragraph: 43
+
+# ---------------------------------------------------------------------------
+# Automated checks
+#
+# Not every principle can be checked by scanning project files. Principles
+# like Proportionality, Human Oversight, Awareness, and Governance require
+# organizational or governmental processes (see UNESCO's RAM and EIA tools).
+#
+# The checks below cover what CAN be verified at the project level.
+# ---------------------------------------------------------------------------
 
 checks:
-  # Transparency checks
+  # --- Transparency (Principle 7) ---
   - id: "transparency-001"
-    name: "Model Card Documentation"
+    name: "Model / System Card"
     principle: "transparency"
     severity: "error"
     type: "file-exists"
-    description: "Project must include model card or system documentation"
+    description: "Project must include model card or system documentation describing what the system does, its limitations, and intended use"
     config:
       paths:
         - "MODEL_CARD.md"
@@ -93,7 +195,7 @@ checks:
         - "ml-explain"
       require_any: true
 
-  # Fairness checks
+  # --- Fairness (Principle 3) ---
   - id: "fairness-001"
     name: "Fairness Metrics Library"
     principle: "fairness"
@@ -110,13 +212,13 @@ checks:
         - "ai-fairness"
       require_any: true
 
-  # Privacy checks
+  # --- Privacy (Principle 5) ---
   - id: "privacy-001"
     name: "Privacy Impact Assessment"
     principle: "privacy"
     severity: "error"
     type: "file-exists"
-    description: "Project must document privacy impact"
+    description: "Project must document privacy impact and data governance practices"
     config:
       paths:
         - "PRIVACY_IMPACT_ASSESSMENT.md"
@@ -125,13 +227,13 @@ checks:
         - "PRIVACY.md"
         - "docs/PRIVACY.md"
 
-  # Accountability checks
+  # --- Accountability (Principle 8) ---
   - id: "accountability-001"
     name: "Version Control"
     principle: "accountability"
     severity: "error"
     type: "file-exists"
-    description: "Project must use version control"
+    description: "Project must use version control for auditability and traceability"
     config:
       paths:
         - ".git"
@@ -141,7 +243,7 @@ checks:
     principle: "accountability"
     severity: "error"
     type: "file-exists"
-    description: "Project must have a README describing its purpose and usage"
+    description: "Project must have a README describing its purpose, usage, and responsible parties"
     config:
       paths:
         - "README.md"
@@ -149,13 +251,13 @@ checks:
         - "README.txt"
         - "README"
 
-  # Safety checks
+  # --- Safety (Principle 2) ---
   - id: "safety-001"
     name: "Dependency Manifest"
     principle: "safety"
     severity: "warning"
     type: "file-exists"
-    description: "Project must declare its dependencies in a manifest file"
+    description: "Project must declare its dependencies for supply-chain security"
     config:
       paths:
         - "package.json"
@@ -173,7 +275,7 @@ checks:
     principle: "safety"
     severity: "warning"
     type: "file-exists"
-    description: "Project should include a license file"
+    description: "Project should include a license to clarify rights and obligations"
     config:
       paths:
         - "LICENSE"
@@ -181,6 +283,27 @@ checks:
         - "LICENSE.txt"
         - "LICENCE"
         - "COPYING"
+
+  # --- Sustainability (Principle 4) ---
+  - id: "sustainability-001"
+    name: "Ethical Impact Documentation"
+    principle: "sustainability"
+    severity: "warning"
+    type: "file-exists"
+    description: "Project should document its ethical and environmental impact (aligned with UNESCO EIA methodology)"
+    config:
+      paths:
+        - "ETHICS.md"
+        - "docs/ETHICS.md"
+        - "ETHICAL_IMPACT_ASSESSMENT.md"
+        - "docs/ETHICAL_IMPACT_ASSESSMENT.md"
+        - "IMPACT.md"
+        - "docs/IMPACT.md"
+    help_url: "https://www.unesco.org/ethics-ai/en/eia"
+
+# ---------------------------------------------------------------------------
+# Compliance levels
+# ---------------------------------------------------------------------------
 
 compliance_levels:
   basic:
@@ -200,6 +323,7 @@ compliance_levels:
       - fairness
       - privacy
       - accountability
+      - safety
     minimum_check_pass_rate: 0.7
     badge_color: "green"
 
