@@ -43,6 +43,49 @@
     border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
   .level-table th { font-weight: 600; color: #475569; }
   .level-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+
+  /* Try It form */
+  .try-it { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 1.5rem; margin: 1.5rem 0 2rem; }
+  .try-it h2 { margin: 0 0 0.75rem; border: none; padding: 0; font-size: 1.1rem; }
+  .form-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .form-row input[type="text"] { flex: 1; padding: 0.6rem 0.75rem; border: 1px solid #cbd5e1;
+    border-radius: 6px; font-size: 0.95rem; font-family: inherit; }
+  .form-row input[type="text"]:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
+  .form-row button { padding: 0.6rem 1.25rem; background: #2563eb; color: #fff; border: none;
+    border-radius: 6px; font-size: 0.95rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .form-row button:hover { background: #1d4ed8; }
+  .form-row button:disabled { background: #94a3b8; cursor: not-allowed; }
+  .options-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+  .options-row label { font-size: 0.8rem; color: #475569; }
+  .options-row select { font-size: 0.85rem; padding: 0.2rem 0.4rem; border: 1px solid #cbd5e1;
+    border-radius: 4px; font-family: inherit; }
+  #result-area { display: none; margin-top: 1rem; }
+  #result-area.visible { display: block; }
+  .result-summary { padding: 1rem; border-radius: 8px; margin-bottom: 0.75rem; }
+  .result-summary.pass { background: #f0fdf4; border: 1px solid #86efac; }
+  .result-summary.warn { background: #fffbeb; border: 1px solid #fcd34d; }
+  .result-summary.fail { background: #fef2f2; border: 1px solid #fca5a5; }
+  .result-summary h3 { margin: 0 0 0.5rem; font-size: 1rem; }
+  .result-summary .stats { font-size: 0.9rem; color: #334155; }
+  .result-summary .stats span { margin-right: 1rem; }
+  .principle-list { list-style: none; padding: 0; }
+  .principle-list li { padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+  .principle-list .status-icon { margin-right: 0.35rem; }
+  .check-detail { font-size: 0.8rem; color: #64748b; margin-left: 1.5rem; }
+  .check-detail.suggestion { color: #b45309; }
+  .error-msg { background: #fef2f2; border: 1px solid #fca5a5; padding: 0.75rem 1rem;
+    border-radius: 6px; color: #991b1b; font-size: 0.9rem; }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #fff;
+    border-top-color: transparent; border-radius: 50%; animation: spin .6s linear infinite;
+    vertical-align: middle; margin-right: 0.35rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .view-toggle { margin-top: 0.5rem; }
+  .view-toggle button { background: none; border: 1px solid #cbd5e1; padding: 0.3rem 0.75rem;
+    border-radius: 4px; font-size: 0.8rem; cursor: pointer; margin-right: 0.25rem; color: #475569; }
+  .view-toggle button.active { background: #1e293b; color: #fff; border-color: #1e293b; }
+  #json-output { display: none; }
+  #json-output.visible { display: block; }
 </style>
 </head>
 <body>
@@ -50,7 +93,35 @@
   <h1>Ethica</h1>
   <p class="subtitle">AI ethics compliance checking as a service, powered by the <a href="https://www.unesco.org/en/artificial-intelligence/recommendation-ethics">UNESCO Recommendation on the Ethics of AI</a>.</p>
 
-  <p>Point Ethica at any public GitHub repository and get an instant compliance report against the UNESCO AI ethics framework — no installation required.</p>
+  <div class="try-it">
+    <h2>Check a Repository</h2>
+    <p style="margin:0 0 0.75rem; font-size:0.9rem; color:#64748b;">Paste any public GitHub repo URL to run an ethics compliance check.</p>
+    <div class="form-row">
+      <input type="text" id="repo-url" placeholder="https://github.com/owner/repo" aria-label="GitHub repository URL">
+      <button id="check-btn" onclick="runCheck()">Check</button>
+    </div>
+    <div class="options-row">
+      <label>Level:
+        <select id="level-select">
+          <option value="standard" selected>standard (70%)</option>
+          <option value="basic">basic (50%)</option>
+          <option value="verified">verified (95%)</option>
+        </select>
+      </label>
+      <label>Branch:
+        <input type="text" id="ref-input" placeholder="default" style="width:100px; font-size:0.85rem; padding:0.2rem 0.4rem; border:1px solid #cbd5e1; border-radius:4px;">
+      </label>
+    </div>
+    <div id="result-area">
+      <div id="result-summary"></div>
+      <div class="view-toggle">
+        <button class="active" onclick="showView('report')">Report</button>
+        <button onclick="showView('json')">JSON</button>
+      </div>
+      <ul class="principle-list" id="principle-list"></ul>
+      <pre id="json-output"><code id="json-code"></code></pre>
+    </div>
+  </div>
 
   <h2>API Endpoints</h2>
   <table class="endpoints">
@@ -240,5 +311,125 @@ ethica check      # run compliance checks</code></pre>
     Apache 2.0
   </div>
 </div>
+<script>
+async function runCheck() {
+  var btn = document.getElementById('check-btn');
+  var urlInput = document.getElementById('repo-url');
+  var resultArea = document.getElementById('result-area');
+  var summaryEl = document.getElementById('result-summary');
+  var listEl = document.getElementById('principle-list');
+  var jsonCode = document.getElementById('json-code');
+  var jsonOutput = document.getElementById('json-output');
+
+  var repoUrl = urlInput.value.trim();
+  if (!repoUrl) { urlInput.focus(); return; }
+
+  // Normalize: accept "owner/repo" shorthand
+  if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repoUrl)) {
+    repoUrl = 'https://github.com/' + repoUrl + '.git';
+  }
+  if (!repoUrl.endsWith('.git') && repoUrl.includes('github.com')) {
+    repoUrl = repoUrl.replace(/\/$/, '') + '.git';
+  }
+
+  var level = document.getElementById('level-select').value;
+  var ref = document.getElementById('ref-input').value.trim();
+  var body = { repo_url: repoUrl, compliance_level: level };
+  if (ref) body.ref = ref;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Checking\u2026';
+  resultArea.className = 'visible';
+  summaryEl.innerHTML = '';
+  listEl.innerHTML = '';
+  jsonCode.textContent = '';
+  jsonOutput.className = '';
+
+  try {
+    var resp = await fetch('/check', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    var data = await resp.json();
+
+    if (!resp.ok) {
+      summaryEl.innerHTML = '<div class="error-msg">' + escHtml(data.detail || data.error || 'Request failed') + '</div>';
+      listEl.innerHTML = '';
+      jsonCode.textContent = '';
+      return;
+    }
+
+    // Summary
+    var color = data.overall_status === 'passed' ? 'pass' : (data.overall_status === 'failed' ? 'fail' : 'warn');
+    var pct = Math.round(data.pass_rate * 100);
+    var compliance = data.compliance;
+    var meetsHtml = '';
+    if (compliance) {
+      meetsHtml = compliance.meets_level
+        ? ' &mdash; <strong style="color:#16a34a">meets ' + escHtml(compliance.level) + '</strong>'
+        : ' &mdash; <strong style="color:#dc2626">does not meet ' + escHtml(compliance.level) + '</strong>';
+    }
+    summaryEl.innerHTML = '<div class="result-summary ' + color + '">'
+      + '<h3>' + escHtml(data.overall_status.charAt(0).toUpperCase() + data.overall_status.slice(1)) + meetsHtml + '</h3>'
+      + '<div class="stats">'
+      + '<span>' + pct + '% pass rate</span>'
+      + '<span>' + data.checks_passed + ' passed</span>'
+      + '<span>' + data.checks_failed + ' failed</span>'
+      + '<span>' + data.checks_skipped + ' skipped</span>'
+      + '</div></div>';
+
+    // Principle + check breakdown
+    var html = '';
+    (data.principles || []).forEach(function(p) {
+      var icon = p.status === 'passed' ? '\u2705' : (p.status === 'failed' ? '\u274c' : '\u23ed\ufe0f');
+      html += '<li><span class="status-icon">' + icon + '</span><strong>' + escHtml(p.id) + '</strong>'
+        + ' &mdash; ' + p.passed + ' passed, ' + p.failed + ' failed, ' + p.skipped + ' skipped';
+      (p.checks || []).forEach(function(c) {
+        var cIcon = c.status === 'passed' ? '\u2713' : (c.status === 'failed' ? '\u2717' : '\u2013');
+        html += '<div class="check-detail">' + cIcon + ' ' + escHtml(c.name) + ': ' + escHtml(c.message) + '</div>';
+        if (c.suggestion) {
+          html += '<div class="check-detail suggestion">\u2192 ' + escHtml(c.suggestion) + '</div>';
+        }
+      });
+      html += '</li>';
+    });
+    listEl.innerHTML = html;
+
+    // JSON view
+    jsonCode.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    summaryEl.innerHTML = '<div class="error-msg">Network error: ' + escHtml(err.message) + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Check';
+  }
+}
+
+function showView(view) {
+  var btns = document.querySelectorAll('.view-toggle button');
+  btns.forEach(function(b) { b.className = ''; });
+  if (view === 'json') {
+    btns[1].className = 'active';
+    document.getElementById('json-output').className = 'visible';
+    document.getElementById('principle-list').style.display = 'none';
+  } else {
+    btns[0].className = 'active';
+    document.getElementById('json-output').className = '';
+    document.getElementById('principle-list').style.display = '';
+  }
+}
+
+function escHtml(s) {
+  var d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// Allow Enter key to submit
+document.getElementById('repo-url').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') runCheck();
+});
+</script>
 </body>
 </html>
