@@ -8,49 +8,236 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
          background: #f8fafc; color: #1e293b; line-height: 1.6; }
-  .container { max-width: 640px; margin: 0 auto; padding: 4rem 1.5rem; }
+  .container { max-width: 720px; margin: 0 auto; padding: 3rem 1.5rem; }
   h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
   .subtitle { color: #64748b; font-size: 1.1rem; margin-bottom: 2rem; }
-  h2 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 0.75rem; }
+  h2 { font-size: 1.2rem; font-weight: 600; margin: 2.5rem 0 0.75rem;
+       padding-bottom: 0.3rem; border-bottom: 1px solid #e2e8f0; }
+  h3 { font-size: 1rem; font-weight: 600; margin: 1.5rem 0 0.5rem; color: #334155; }
+  p { margin: 0.5rem 0; }
   code { background: #e2e8f0; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.9em; }
   pre { background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 8px;
-        overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.5rem 0; }
+        overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 0.75rem 0; }
+  pre code { background: none; padding: 0; }
   a { color: #2563eb; }
   .endpoints { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
   .endpoints td, .endpoints th { text-align: left; padding: 0.4rem 0.75rem;
     border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
   .endpoints th { font-weight: 600; color: #475569; }
   .method { font-family: monospace; font-weight: 600; font-size: 0.8rem; }
+  .param-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
+  .param-table td, .param-table th { text-align: left; padding: 0.35rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+  .param-table th { font-weight: 600; color: #475569; font-size: 0.8rem; text-transform: uppercase; }
+  .badge { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 0.1rem 0.4rem;
+           border-radius: 3px; vertical-align: middle; }
+  .badge-required { background: #fee2e2; color: #991b1b; }
+  .badge-optional { background: #e0e7ff; color: #3730a3; }
+  .response-block { background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 8px;
+                    padding: 1rem; margin: 0.75rem 0; font-size: 0.85rem; overflow-x: auto; }
+  .response-block pre { background: #1e293b; margin: 0.5rem 0 0; }
+  .note { background: #fffbeb; border-left: 3px solid #f59e0b; padding: 0.75rem 1rem;
+          border-radius: 0 6px 6px 0; margin: 1rem 0; font-size: 0.9rem; }
   .footer { margin-top: 3rem; color: #94a3b8; font-size: 0.8rem; }
+  .level-table td, .level-table th { text-align: left; padding: 0.35rem 0.75rem;
+    border-bottom: 1px solid #e2e8f0; font-size: 0.85rem; }
+  .level-table th { font-weight: 600; color: #475569; }
+  .level-table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>Ethica</h1>
-  <p class="subtitle">AI ethics compliance checking as a service, powered by Cloudflare Pages.</p>
+  <p class="subtitle">AI ethics compliance checking as a service, powered by the <a href="https://www.unesco.org/en/artificial-intelligence/recommendation-ethics">UNESCO Recommendation on the Ethics of AI</a>.</p>
+
+  <p>Point Ethica at any public GitHub repository and get an instant compliance report against the UNESCO AI ethics framework — no installation required.</p>
 
   <h2>API Endpoints</h2>
   <table class="endpoints">
     <tr><th>Method</th><th>Path</th><th>Description</th></tr>
     <tr><td class="method">GET</td><td><code><a href="/health">/health</a></code></td><td>Health check</td></tr>
-    <tr><td class="method">GET</td><td><code><a href="/frameworks">/frameworks</a></code></td><td>List frameworks</td></tr>
-    <tr><td class="method">POST</td><td><code>/check</code></td><td>JSON compliance results</td></tr>
-    <tr><td class="method">POST</td><td><code>/check/report</code></td><td>HTML report card</td></tr>
-    <tr><td class="method">POST</td><td><code>/check/badge</code></td><td>SVG compliance badge</td></tr>
-    <tr><td class="method">GET</td><td><code>/badge/:owner/:repo</code></td><td>README-embeddable badge</td></tr>
+    <tr><td class="method">GET</td><td><code><a href="/frameworks">/frameworks</a></code></td><td>List available frameworks</td></tr>
+    <tr><td class="method">POST</td><td><code>/check</code></td><td>Run compliance check (JSON results)</td></tr>
+    <tr><td class="method">POST</td><td><code>/check/report</code></td><td>Run compliance check (HTML report)</td></tr>
+    <tr><td class="method">POST</td><td><code>/check/badge</code></td><td>Run compliance check (SVG badge)</td></tr>
+    <tr><td class="method">GET</td><td><code>/badge/:owner/:repo</code></td><td>README-embeddable SVG badge</td></tr>
   </table>
 
-  <h2>Quick Example</h2>
-  <pre>curl -X POST https://ethica.pages.dev/check \
-  -H "Content-Type: application/json" \
-  -d '{"repo_url": "https://github.com/owner/repo.git"}'</pre>
+  <!-- POST /check --------------------------------------------------------->
+  <h2>POST /check</h2>
+  <p>Run a full compliance check against a public GitHub repository and return structured JSON results.</p>
 
-  <h2>Badge for Your README</h2>
-  <pre>![Ethica](https://ethica.pages.dev/badge/owner/repo)</pre>
+  <h3>Request Body</h3>
+  <table class="param-table">
+    <tr><th>Field</th><th>Type</th><th></th><th>Description</th></tr>
+    <tr>
+      <td><code>repo_url</code></td><td>string</td>
+      <td><span class="badge badge-required">required</span></td>
+      <td>GitHub repository URL (e.g. <code>https://github.com/owner/repo.git</code>)</td>
+    </tr>
+    <tr>
+      <td><code>ref</code></td><td>string</td>
+      <td><span class="badge badge-optional">optional</span></td>
+      <td>Branch or tag to check (defaults to the repo's default branch)</td>
+    </tr>
+    <tr>
+      <td><code>framework</code></td><td>string</td>
+      <td><span class="badge badge-optional">optional</span></td>
+      <td>Framework ID (default: <code>unesco-2021</code>)</td>
+    </tr>
+    <tr>
+      <td><code>compliance_level</code></td><td>string</td>
+      <td><span class="badge badge-optional">optional</span></td>
+      <td>One of <code>basic</code>, <code>standard</code>, or <code>verified</code> (default: <code>standard</code>)</td>
+    </tr>
+  </table>
+
+  <h3>Example</h3>
+  <pre><code>curl -X POST https://ethica.pages.dev/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_url": "https://github.com/owner/repo.git"
+  }'</code></pre>
+
+  <p>With optional parameters:</p>
+  <pre><code>curl -X POST https://ethica.pages.dev/check \
+  -H "Content-Type: application/json" \
+  -d '{
+    "repo_url": "https://github.com/owner/repo.git",
+    "ref": "main",
+    "framework": "unesco-2021",
+    "compliance_level": "verified"
+  }'</code></pre>
+
+  <h3>Response</h3>
+  <div class="response-block">
+    <p>Returns a JSON object with:</p>
+    <pre><code>{
+  "framework_id": "unesco-2021",
+  "framework_version": "1.0.0",
+  "total_checks": 10,
+  "checks_passed": 7,
+  "checks_failed": 2,
+  "checks_skipped": 1,
+  "pass_rate": 0.7,
+  "overall_status": "passed with warnings",
+  "overall_status_color": "yellow",
+  "project_types": ["python"],
+  "request": {
+    "repo_url": "https://github.com/owner/repo.git",
+    "ref": null,
+    "framework": "unesco-2021",
+    "compliance_level": "standard"
+  },
+  "compliance": {
+    "level": "standard",
+    "required_pass_rate": 0.7,
+    "actual_pass_rate": 0.7,
+    "meets_level": true
+  },
+  "principles": [
+    {
+      "id": "transparency",
+      "status": "passed",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "checks": [
+        {
+          "id": "unesco-2021/transparency-001",
+          "name": "Model / System Card",
+          "status": "passed",
+          "message": "Found required file/directory at MODEL_CARD.md",
+          "severity": "error",
+          "suggestion": null
+        }
+      ]
+    }
+  ]
+}</code></pre>
+  </div>
+
+  <!-- POST /check/report -------------------------------------------------->
+  <h2>POST /check/report</h2>
+  <p>Same request body as <code>/check</code>, but returns a rendered HTML report card instead of JSON. Useful for embedding in iframes or opening directly in a browser.</p>
+
+  <pre><code>curl -X POST https://ethica.pages.dev/check/report \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/owner/repo.git"}' \
+  -o report.html</code></pre>
+
+  <!-- POST /check/badge --------------------------------------------------->
+  <h2>POST /check/badge</h2>
+  <p>Same request body as <code>/check</code>, but returns an SVG badge image. Useful for generating a badge dynamically via a POST request.</p>
+
+  <pre><code>curl -X POST https://ethica.pages.dev/check/badge \
+  -H "Content-Type: application/json" \
+  -d '{"repo_url": "https://github.com/owner/repo.git"}' \
+  -o badge.svg</code></pre>
+
+  <!-- GET /badge/:owner/:repo --------------------------------------------->
+  <h2>GET /badge/:owner/:repo</h2>
+  <p>Returns an SVG compliance badge for a GitHub repository. This is the simplest way to add an Ethica badge to your README since it works as a plain image URL.</p>
+
+  <h3>Query Parameters</h3>
+  <table class="param-table">
+    <tr><th>Param</th><th>Default</th><th>Description</th></tr>
+    <tr><td><code>level</code></td><td><code>standard</code></td><td>Compliance level: <code>basic</code>, <code>standard</code>, or <code>verified</code></td></tr>
+    <tr><td><code>framework</code></td><td><code>unesco-2021</code></td><td>Framework ID</td></tr>
+    <tr><td><code>ref</code></td><td>default branch</td><td>Branch or tag to check</td></tr>
+  </table>
+
+  <h3>Add a Badge to Your README</h3>
+  <p>Paste this into your <code>README.md</code> (replace <code>owner/repo</code> with your GitHub repository):</p>
+
+  <pre><code>![Ethica](https://ethica.pages.dev/badge/owner/repo)</code></pre>
+
+  <p>With options:</p>
+  <pre><code>![Ethica](https://ethica.pages.dev/badge/owner/repo?level=verified&amp;ref=main)</code></pre>
+
+  <!-- Compliance Levels --------------------------------------------------->
+  <h2>Compliance Levels</h2>
+  <table class="level-table">
+    <tr><th>Level</th><th>Min Pass Rate</th><th>Scope</th></tr>
+    <tr><td><code>basic</code></td><td>50%</td><td>Transparency + Accountability only</td></tr>
+    <tr><td><code>standard</code></td><td>70%</td><td>+ Fairness, Privacy, Safety</td></tr>
+    <tr><td><code>verified</code></td><td>95%</td><td>All principles</td></tr>
+  </table>
+
+  <!-- What It Checks ------------------------------------------------------>
+  <h2>What It Checks</h2>
+  <p>Ethica runs automated checks across 6 of the 10 UNESCO AI ethics principles:</p>
+  <table class="param-table">
+    <tr><th>Principle</th><th>Check</th><th>What it looks for</th></tr>
+    <tr><td>Transparency</td><td>Model / System Card</td><td><code>MODEL_CARD.md</code> or <code>SYSTEM_CARD.md</code></td></tr>
+    <tr><td>Transparency</td><td>Explainability</td><td><code>shap</code>, <code>lime</code>, <code>captum</code>, etc. in deps</td></tr>
+    <tr><td>Transparency</td><td>Provider Transparency</td><td>AI providers that publish system cards</td></tr>
+    <tr><td>Fairness</td><td>Fairness Metrics</td><td><code>fairlearn</code>, <code>aif360</code>, etc. in deps</td></tr>
+    <tr><td>Privacy</td><td>Privacy Assessment</td><td><code>PRIVACY_IMPACT_ASSESSMENT.md</code> or <code>PRIVACY.md</code></td></tr>
+    <tr><td>Accountability</td><td>Version Control</td><td><code>.git/</code> directory</td></tr>
+    <tr><td>Accountability</td><td>README</td><td><code>README.md</code> (or <code>.rst</code>, <code>.txt</code>)</td></tr>
+    <tr><td>Safety</td><td>Dependency Manifest</td><td><code>package.json</code>, <code>requirements.txt</code>, etc.</td></tr>
+    <tr><td>Safety</td><td>License</td><td><code>LICENSE</code>, <code>COPYING</code>, etc.</td></tr>
+    <tr><td>Sustainability</td><td>Ethical Impact Doc</td><td><code>ETHICS.md</code> or <code>ETHICAL_IMPACT_ASSESSMENT.md</code></td></tr>
+  </table>
+
+  <div class="note">
+    <strong>Note:</strong> Ethica uses the GitHub API to inspect repositories — no code is cloned or executed. Public repos work out of the box. Rate limits apply (60 req/hr unauthenticated, 5,000/hr with a token).
+  </div>
+
+  <!-- CLI ----------------------------------------------------------------->
+  <h2>CLI Usage</h2>
+  <p>Ethica is also available as a Python CLI for local checks:</p>
+  <pre><code>pip install -e "."
+cd your-project
+ethica init       # creates .ai-ethics.yaml + doc templates
+ethica check      # run compliance checks</code></pre>
+  <p>See the <a href="https://github.com/shellen/ethica">GitHub repository</a> for full documentation.</p>
 
   <div class="footer">
     <a href="https://github.com/shellen/ethica">GitHub</a> &middot;
-    UNESCO Recommendation on the Ethics of AI (2021)
+    <a href="https://www.unesco.org/en/artificial-intelligence/recommendation-ethics">UNESCO Recommendation on the Ethics of AI</a> (2021) &middot;
+    Apache 2.0
   </div>
 </div>
 </body>
