@@ -23,7 +23,12 @@ app.use("*", cors());
 // ---------------------------------------------------------------------------
 
 app.get("/health", (c) => {
-  return c.json({ status: "ok", version: "0.1.0", runtime: "cloudflare-workers" });
+  return c.json({
+    status: "ok",
+    version: "0.1.0",
+    runtime: "cloudflare-workers",
+    github_token_configured: !!c.env.GITHUB_TOKEN,
+  });
 });
 
 // ---------------------------------------------------------------------------

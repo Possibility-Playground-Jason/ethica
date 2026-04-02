@@ -1,5 +1,7 @@
 # Ethica
 
+[![Cloudflare Workers](https://img.shields.io/badge/Deployed%20on-Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white)](https://ethica.jason-266.workers.dev)
+
 **AI ethics compliance checking as a service and CLI**
 
 Automated compliance checking against the [UNESCO Recommendation on the Ethics of AI](https://www.unesco.org/en/artificial-intelligence/recommendation-ethics) -- the first global standard on AI ethics, adopted unanimously by 193 Member States in November 2021.
@@ -35,7 +37,7 @@ curl -X POST http://localhost:8000/check \
 Once deployed, add a compliance badge to any project:
 
 ```markdown
-![Ethica](https://your-ethica-service.run.app/badge/owner/repo)
+![Ethica](https://ethica.jason-266.workers.dev/badge/owner/repo)
 ```
 
 Query params: `?level=basic|standard|verified` `?ref=branch` `?framework=unesco-2021`

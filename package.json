@@ -4,7 +4,7 @@
   "private": true,
   "description": "Ethica AI ethics compliance checking — Cloudflare Pages deployment",
   "scripts": {
-    "deploy": "npx wrangler pages deploy public"
+    "deploy": "npx wrangler pages deploy public --project-name ethica"
   },
   "devDependencies": {
     "wrangler": "^4.0.0"
