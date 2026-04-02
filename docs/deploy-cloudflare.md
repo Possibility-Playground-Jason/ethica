@@ -1,13 +1,13 @@
-# Deploying Ethica to Cloudflare Pages
+# Deploying Ethica to Cloudflare Workers
 
 Run the ethica API on Cloudflare's edge network — no Docker, no containers,
 no cold starts. Auto-deploys from GitHub on every push.
 
 ## How it works
 
-The Pages deployment replaces `git clone` with the **GitHub API**:
+The Workers deployment replaces `git clone` with the **GitHub API**:
 
-| Python (Cloud Run)               | Pages (Cloudflare)                       |
+| Python (Cloud Run)               | Workers (Cloudflare)                     |
 | -------------------------------- | ---------------------------------------- |
 | `git clone` via subprocess       | GitHub Trees API (single request)        |
 | Read files from filesystem       | GitHub Contents API (on-demand fetch)    |
@@ -32,10 +32,10 @@ npm run dev          # local dev server at http://localhost:8787
 
 ## Deploy from GitHub (recommended)
 
-Connect your repo to Cloudflare Pages for automatic deployments on every push:
+Connect your repo to Cloudflare Workers for automatic deployments on every push:
 
 1. Go to the [Cloudflare dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create**
-2. Select the **Pages** tab → **Connect to Git**
+2. Select **Create Worker** → **Connect to Git**
 3. Authorize Cloudflare and select your `ethica` repository
 4. Configure the build:
 
@@ -44,14 +44,15 @@ Connect your repo to Cloudflare Pages for automatic deployments on every push:
    | **Production branch** | `main`            |
    | **Root directory**    | `workers`         |
    | **Build command**     | `npm install`     |
-   | **Output directory**  | `public`          |
 
 5. Click **Save and Deploy**
 
-Your API will be live at `https://ethica.pages.dev` (or your custom project name).
+The `wrangler.toml` controls the entry point (`main`) and static assets
+(`[assets]`), so no additional dashboard configuration is needed.
 
-Every push to `main` triggers a new deployment automatically. Pull request
-branches get preview URLs.
+Your API will be live at `https://ethica.<your-subdomain>.workers.dev`.
+
+Every push to `main` triggers a new deployment automatically.
 
 ## Deploy manually (CLI)
 
@@ -59,7 +60,7 @@ branches get preview URLs.
 cd workers
 npm install
 npx wrangler login              # first time only
-npx wrangler pages deploy public
+npx wrangler deploy
 ```
 
 ## GitHub token (recommended)
@@ -68,7 +69,7 @@ Without a token, the GitHub API allows 60 requests/hour. With a token,
 you get 5,000/hour. Each ethica check uses 2-30 API calls depending on
 repo size.
 
-**Via the Cloudflare dashboard** (recommended for Pages):
+**Via the Cloudflare dashboard** (recommended):
 
 1. Go to **Workers & Pages** → your ethica project → **Settings** → **Environment variables**
 2. Add variable: Name = `GITHUB_TOKEN`, Value = your token
@@ -77,7 +78,7 @@ repo size.
 **Via the CLI:**
 
 ```bash
-npx wrangler pages secret put GITHUB_TOKEN --project-name ethica
+npx wrangler secret put GITHUB_TOKEN
 # Paste your token when prompted
 ```
 
@@ -100,7 +101,7 @@ All endpoints match the Python API:
 ### Example: check a repo
 
 ```bash
-curl -X POST https://ethica.pages.dev/check \
+curl -X POST https://ethica.<your-subdomain>.workers.dev/check \
   -H "Content-Type: application/json" \
   -d '{"repo_url": "https://github.com/user/my-ai-app.git"}'
 ```
@@ -108,12 +109,12 @@ curl -X POST https://ethica.pages.dev/check \
 ### Example: embed a badge
 
 ```markdown
-![Ethica](https://ethica.pages.dev/badge/owner/repo)
+![Ethica](https://ethica.<your-subdomain>.workers.dev/badge/owner/repo)
 ```
 
 ## Custom domain
 
-1. Go to your Pages project → **Custom domains**
+1. Go to your Workers project → **Settings** → **Domains & Routes**
 2. Add your domain (e.g. `ethica.example.com`)
 3. Cloudflare handles DNS and TLS automatically
 
@@ -130,7 +131,7 @@ complete well within CPU limits.
 
 ## Comparison with Cloud Run
 
-| Aspect              | Cloud Run (Docker)     | Pages (Cloudflare)          |
+| Aspect              | Cloud Run (Docker)     | Workers (Cloudflare)        |
 | ------------------- | ---------------------- | --------------------------- |
 | **Cold start**      | 2-10 seconds           | None (runs at edge)         |
 | **Deployment**      | Build image + deploy   | Push to GitHub (automatic)  |
@@ -139,11 +140,10 @@ complete well within CPU limits.
 | **Free tier**       | ~2M requests/mo        | 100K requests/day           |
 | **Global latency**  | Single region          | 300+ locations              |
 | **Git access**      | git clone (subprocess) | GitHub API (fetch)          |
-| **Preview deploys** | Manual                 | Automatic per PR            |
 
 ## Limitations
 
-- **GitHub repos only**: The Pages version uses the GitHub API, so it
+- **GitHub repos only**: The Workers version uses the GitHub API, so it
   currently only supports GitHub-hosted repositories. The Python version
   supports any git URL.
 - **Large repos**: GitHub's Trees API may truncate results for repos with
